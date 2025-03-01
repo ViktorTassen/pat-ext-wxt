@@ -49,6 +49,13 @@
  }
 
 
+
+/* Hide Amazon checkboxes */ 
+ label:has([role="checkbox"]) {
+  display: none;
+}
+
+
 /* Animation classes for shadcn components */
 .animate-in {
   animation-duration: 150ms;
