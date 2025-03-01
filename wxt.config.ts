@@ -7,6 +7,9 @@ export default defineConfig({
   runner: defineRunnerConfig({
     disabled: true,
   }),
+  manifest: {
+    permissions: ['storage'],
+  },
 });
 
 
