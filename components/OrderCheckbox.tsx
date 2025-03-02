@@ -21,12 +21,12 @@ export function OrderCheckbox() {
   }
 
   return (
-    <div id="order-checkbox-container" className="flex items-center space-x-2 mr-2">
+    <span id="order-checkbox-container" className="flex float-left mr-4">
       <Checkbox 
         id="order-checkbox" 
         checked={checked} 
         onCheckedChange={handleCheckedChange} 
       />
-    </div>
+    </span>
   )
 }
