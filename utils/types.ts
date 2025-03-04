@@ -1,0 +1,1 @@
+export type Region = 'US' | 'UK' | 'DE' | 'ES' | 'FR' | 'IT' | 'PL' | 'IN' | 'CZ' | 'JP';

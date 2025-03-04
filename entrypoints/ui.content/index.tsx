@@ -69,7 +69,7 @@ export default defineContentScript({
     });
 
     // Create the checkbox UI
-    function createCheckboxUi(anchor: HTMLElement, orderId: string) {
+    function createCheckboxUi(anchor: HTMLElement) {
       return createIntegratedUi(ctx, {
         position: 'inline',
         anchor,
@@ -109,9 +109,10 @@ export default defineContentScript({
 
             const orderIdElement = parent.parentElement?.querySelector('.order-id');
             const orderIdText = orderIdElement?.textContent?.trim();
+            console.log(orderIdText);
             
             parent.setAttribute("data-checkbox-initialized", "true");
-            const checkboxUi = createCheckboxUi(parent, orderIdText);
+            const checkboxUi = createCheckboxUi(parent);
             checkboxUi.mount();
 
 

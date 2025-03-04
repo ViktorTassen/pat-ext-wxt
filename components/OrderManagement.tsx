@@ -9,12 +9,12 @@ import {
   Typography,
   MenuItem
 } from "@mui/material";
-
 import { DeleteOutline, ContentCopy, AccessTime } from "@mui/icons-material";
 import dayjs from "dayjs";
-import PatDateTimePicker from "./PatDateTimePicker";
+import LoadboardDateTimePicker from "./LoadboardDateTimePicker";
 import LoadboardTextField from "./LoadboardTextField";
 import LoadboardSelect from "./LoadboardSelect";
+import ChangesSummary from "./ChangesSummary";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -254,45 +254,6 @@ export function OrderManagement() {
     setEndCalendarOpen(isOpen);
   };
 
-  // Get summary of changes
-  const getChangesSummary = () => {
-    const changes = [];
-    
-    if (startDateTime) {
-      changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
-    }
-    
-    if (endDateTime) {
-      changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
-    }
-    
-    if (minPayout) {
-      changes.push(`Min payout: $${minPayout}`);
-    }
-    
-    if (minPricePerMile) {
-      changes.push(`Min price per mile: $${minPricePerMile}`);
-    }
-    
-    if (stemTime && stemTime !== "none") {
-      changes.push(`Stem time: ${formatStemTime(stemTime)}`);
-    }
-    
-    if (maxStops) {
-      changes.push(`Max stops: ${maxStops}`);
-    }
-    
-    if (originRadius && originRadius !== "none") {
-      changes.push(`Origin radius: ${originRadius} miles`);
-    }
-    
-    if (destinationRadius && destinationRadius !== "none") {
-      changes.push(`Destination radius: ${destinationRadius} miles`);
-    }
-    
-    return changes;
-  };
-
   const handleActionChange = (event: SelectChangeEvent<string>) => {
     setActiveAction(event.target.value);
   };
@@ -354,9 +315,46 @@ export function OrderManagement() {
     }))
   ];
 
-  return (
-
+  // Get changes for summary component
+  const getChangesForSummary = () => {
+    const changes: Record<string, string> = {};
     
+    if (startDateTime) {
+      changes.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
+    }
+    
+    if (endDateTime) {
+      changes.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
+    }
+    
+    if (minPayout) {
+      changes.minPayout = minPayout;
+    }
+    
+    if (minPricePerMile) {
+      changes.minPricePerMile = minPricePerMile;
+    }
+    
+    if (stemTime && stemTime !== "none") {
+      changes.stemTime = stemTime;
+    }
+    
+    if (maxStops) {
+      changes.maxStops = maxStops;
+    }
+    
+    if (originRadius && originRadius !== "none") {
+      changes.originRadius = originRadius;
+    }
+    
+    if (destinationRadius && destinationRadius !== "none") {
+      changes.destinationRadius = destinationRadius;
+    }
+    
+    return changes;
+  };
+
+  return (
     <Paper 
       variant="outlined"
       sx={{ 
@@ -366,7 +364,6 @@ export function OrderManagement() {
         borderRadius: 1 
       }}
     >
-      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <Box sx={{ width: 200 }}>
           <LoadboardSelect
@@ -410,11 +407,10 @@ export function OrderManagement() {
       
       {(activeAction === "modify" || activeAction === "clone") && (
         <Box sx={{ mt: 4 }}>
-          
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <PatDateTimePicker
+                <LoadboardDateTimePicker
                   index={0}
                   value={startDateTime ? startDateTime.toISOString() : null}
                   isOpen={startCalendarOpen}
@@ -423,7 +419,7 @@ export function OrderManagement() {
                 />
               </Grid>
               <Grid item xs={6}>
-                <PatDateTimePicker
+                <LoadboardDateTimePicker
                   index={1}
                   value={endDateTime ? endDateTime.toISOString() : null}
                   isOpen={endCalendarOpen}
@@ -479,7 +475,7 @@ export function OrderManagement() {
               <Grid item xs={6}>
                 <LoadboardSelect
                   id="origin-radius-label"
-                  label="Origin Radius (miles)"
+                  label="Origin Radius"
                   value={originRadius}
                   onChange={(e) => setOriginRadius(e.target.value)}
                   options={radiusOptions}
@@ -488,7 +484,7 @@ export function OrderManagement() {
               <Grid item xs={6}>
                 <LoadboardSelect
                   id="destination-radius-label"
-                  label="Dest. Radius (miles)"
+                  label="Dest. Radius"
                   value={destinationRadius}
                   onChange={(e) => setDestinationRadius(e.target.value)}
                   options={radiusOptions}
@@ -496,33 +492,11 @@ export function OrderManagement() {
               </Grid>
             </Grid>
             
-            {/* Summary of changes */}
-            {getChangesSummary().length > 0 && (
-              <Box sx={{ 
-                mt: 2, 
-                bgcolor: 'info.50', 
-                p: 1, 
-                borderRadius: 1, 
-                border: 1, 
-                borderColor: 'info.200' 
-              }}>
-                <Typography variant="caption" sx={{ color: 'info.800', fontWeight: 500, mb: 0.5, display: 'block' }}>
-                  {activeAction === "modify" ? "Changes to apply:" : "Clone details:"}
-                </Typography>
-                <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                  {getChangesSummary().map((change, index) => (
-                    <Box component="li" key={index} sx={{ color: 'info.700', fontSize: '0.75rem' }}>
-                      {change}
-                    </Box>
-                  ))}
-                  {activeAction === "clone" && (
-                    <Box component="li" sx={{ color: 'info.700', fontSize: '0.75rem' }}>
-                      Orders to clone: {selectedOrderIds.length}
-                    </Box>
-                  )}
-                </Box>
-              </Box>
-            )}
+            <ChangesSummary
+              changes={getChangesForSummary()}
+              mode={activeAction as 'modify' | 'clone'}
+              selectedCount={selectedOrderIds.length}
+            />
             
             <Button 
               variant="contained"
