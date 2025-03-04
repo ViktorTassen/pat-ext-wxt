@@ -11,15 +11,13 @@ import {
   MenuItem, 
   Divider, 
   Grid, 
-  FormHelperText,
   SelectChangeEvent
 } from "@mui/material";
 
-import { DeleteOutline, ContentCopy, AccessTime, Warning } from "@mui/icons-material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DeleteOutline, ContentCopy, AccessTime } from "@mui/icons-material";
 import dayjs from "dayjs";
-import LoadboardMaxDepTimePicker from "./PatDateTimePicker";
+import PatDateTimePicker from "./PatDateTimePicker";
+import LoadboardTextField from "./LoadboardTextField";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -110,19 +108,8 @@ export function OrderManagement() {
   // Reset form fields when changing action
   useEffect(() => {
     // Reset form
-    if (activeAction === "modify") {
-      // For modify, start with empty values
-      setStartDateTime(null);
-      setEndDateTime(null);
-    } else if (activeAction === "clone") {
-      // For clone, reset to undefined (not prefilled)
-      setStartDateTime(null);
-      setEndDateTime(null);
-    } else {
-      // For other actions, reset all fields
-      setStartDateTime(null);
-      setEndDateTime(null);
-    }
+    setStartDateTime(null);
+    setEndDateTime(null);
     
     // Always reset these fields
     setMinPayout("");
@@ -136,7 +123,6 @@ export function OrderManagement() {
   // Action handlers
   const handleDeleteAllOrders = async () => {
     if (window.confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
-      // Will implement API call later
       console.log("Deleting all orders");
       setAllOrders([]);
       setSelectedOrderIds([]);
@@ -152,7 +138,6 @@ export function OrderManagement() {
     }
     
     if (window.confirm(`Are you sure you want to delete ${selectedOrderIds.length} selected orders? This action cannot be undone.`)) {
-      // Will implement API call later
       console.log("Deleting selected orders:", selectedOrderIds);
       
       const updatedOrders = allOrders.filter(order => !selectedOrderIds.includes(order.id));
@@ -210,7 +195,6 @@ export function OrderManagement() {
     }
     
     console.log("Modifying orders with changes:", changes);
-    // Will implement API call later
     alert(`Orders updated with specified changes`);
   };
 
@@ -256,12 +240,11 @@ export function OrderManagement() {
     }
     
     console.log("Cloning orders with config:", cloneConfig);
-    // Will implement API call later
     alert(`${selectedOrderIds.length} orders cloned`);
   };
 
   // Handle date time picker changes
-  const handleStartDateTimeChange = (value: any, index: number, field: string) => {
+  const handleStartDateTimeChange = (value: any) => {
     if (value && dayjs(value).isValid()) {
       setStartDateTime(dayjs(value));
     } else {
@@ -269,7 +252,7 @@ export function OrderManagement() {
     }
   };
 
-  const handleEndDateTimeChange = (value: any, index: number, field: string) => {
+  const handleEndDateTimeChange = (value: any) => {
     if (value && dayjs(value).isValid()) {
       setEndDateTime(dayjs(value));
     } else {
@@ -278,11 +261,11 @@ export function OrderManagement() {
   };
 
   // Handle calendar open state changes
-  const handleStartCalendarOpenChange = (isOpen: boolean, index: number, field: string) => {
+  const handleStartCalendarOpenChange = (isOpen: boolean) => {
     setStartCalendarOpen(isOpen);
   };
 
-  const handleEndCalendarOpenChange = (isOpen: boolean, index: number, field: string) => {
+  const handleEndCalendarOpenChange = (isOpen: boolean) => {
     setEndCalendarOpen(isOpen);
   };
 
@@ -291,19 +274,11 @@ export function OrderManagement() {
     const changes = [];
     
     if (startDateTime) {
-      if (activeAction === "modify") {
-        changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
-      } else {
-        changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
-      }
+      changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
     }
     
     if (endDateTime) {
-      if (activeAction === "modify") {
-        changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
-      } else {
-        changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
-      }
+      changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
     }
     
     if (minPayout) {
@@ -405,40 +380,40 @@ export function OrderManagement() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <LoadboardMaxDepTimePicker
-
+                <PatDateTimePicker
                   index={0}
                   value={startDateTime ? startDateTime.toISOString() : null}
                   isOpen={startCalendarOpen}
-                  handleCalendarChange={handleStartDateTimeChange}
-                  handleCalendarOpenChange={handleStartCalendarOpenChange}
+                  handleChange={handleStartDateTimeChange}
+                  handleOpenChange={handleStartCalendarOpenChange}
                 />
               </Grid>
               <Grid item xs={6}>
-                <LoadboardMaxDepTimePicker
-
+                <PatDateTimePicker
                   index={1}
                   value={endDateTime ? endDateTime.toISOString() : null}
                   isOpen={endCalendarOpen}
-                  handleCalendarChange={handleEndDateTimeChange}
-                  handleCalendarOpenChange={handleEndCalendarOpenChange}
+                  handleChange={handleEndDateTimeChange}
+                  handleOpenChange={handleEndCalendarOpenChange}
                 />
               </Grid>
             </Grid>
             
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <TextField
-                  label="Min Payout ($)"
-                  type="number"
+                <LoadboardTextField
+                  label="Min Payout"
                   value={minPayout}
                   onChange={(e) => setMinPayout(e.target.value)}
                   placeholder="Keep current"
                   size="small"
                   fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                   InputProps={{
                     inputProps: { 
-                      style: { height: '14px' } 
+                      // style: { height: '14px' } 
                     }
                   }}
                 />

@@ -26,8 +26,8 @@ interface LoadboardDateTimePickerProps {
   index: number;
   value: string | null;
   isOpen: boolean;
-  handleChange: (newValue: any, index: number) => void;
-  handleOpenChange: (isOpen: boolean, index: number) => void;
+  handleChange: (newValue: any) => void;
+  handleOpenChange: (isOpen: boolean) => void;
 }
 
 const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({ 
@@ -43,7 +43,7 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
   const handleToggleOpen = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      handleOpenChange(false, index);
+      handleOpenChange(false);
     }
   };
 
@@ -54,9 +54,8 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
   };
 
   return (
-    <div ref={containerRef}>
       <AmzDateTimePicker
-        onChange={(newValue) => handleChange(newValue, index)}
+        onChange={(newValue) => handleChange(newValue)}
         open={open}
         onOpen={() => handleToggleOpen(true)}
         disablePast
@@ -66,8 +65,6 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
         format="MM/DD HH:mm"
         onClose={() => handleToggleOpen(false)}
         slotProps={{
-          popper: { container: containerRef.current },
-          dialog: { container: containerRef.current },
           actionBar: { actions: ['clear', 'accept'] },
           field: { shouldRespectLeadingZeros: true, clearable: true },
           textField: {
@@ -81,7 +78,6 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
           },
         }}
       />
-    </div>
   );
 };
 
