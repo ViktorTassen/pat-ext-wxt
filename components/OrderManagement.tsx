@@ -406,7 +406,7 @@ export function OrderManagement() {
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <LoadboardMaxDepTimePicker
-                  filter={{}}
+
                   index={0}
                   value={startDateTime ? startDateTime.toISOString() : null}
                   isOpen={startCalendarOpen}
@@ -416,7 +416,7 @@ export function OrderManagement() {
               </Grid>
               <Grid item xs={6}>
                 <LoadboardMaxDepTimePicker
-                  filter={{}}
+
                   index={1}
                   value={endDateTime ? endDateTime.toISOString() : null}
                   isOpen={endCalendarOpen}
