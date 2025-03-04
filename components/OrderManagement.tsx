@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { 
   Button, 
-  TextField, 
-  Typography, 
   Box, 
   Paper, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
   Divider, 
   Grid, 
-  SelectChangeEvent
+  SelectChangeEvent,
+  Typography,
+  MenuItem
 } from "@mui/material";
 
 import { DeleteOutline, ContentCopy, AccessTime } from "@mui/icons-material";
 import dayjs from "dayjs";
 import PatDateTimePicker from "./PatDateTimePicker";
 import LoadboardTextField from "./LoadboardTextField";
+import LoadboardSelect from "./LoadboardSelect";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -122,35 +119,27 @@ export function OrderManagement() {
 
   // Action handlers
   const handleDeleteAllOrders = async () => {
-    if (window.confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
-      console.log("Deleting all orders");
-      setAllOrders([]);
-      setSelectedOrderIds([]);
-      await storage.setItem('local:orders', []);
-      alert("All orders deleted");
-    }
+    console.log("Deleting all orders");
+    setAllOrders([]);
+    setSelectedOrderIds([]);
+    await storage.setItem('local:orders', []);
   };
 
   const handleDeleteSelectedOrders = async () => {
     if (selectedOrderIds.length === 0) {
-      alert("No orders selected");
       return;
     }
     
-    if (window.confirm(`Are you sure you want to delete ${selectedOrderIds.length} selected orders? This action cannot be undone.`)) {
-      console.log("Deleting selected orders:", selectedOrderIds);
-      
-      const updatedOrders = allOrders.filter(order => !selectedOrderIds.includes(order.id));
-      setAllOrders(updatedOrders);
-      setSelectedOrderIds([]);
-      await storage.setItem('local:orders', updatedOrders);
-      alert(`${selectedOrderIds.length} orders deleted`);
-    }
+    console.log("Deleting selected orders:", selectedOrderIds);
+    
+    const updatedOrders = allOrders.filter(order => !selectedOrderIds.includes(order.id));
+    setAllOrders(updatedOrders);
+    setSelectedOrderIds([]);
+    await storage.setItem('local:orders', updatedOrders);
   };
 
   const handleModifyOrders = () => {
     if (selectedOrderIds.length === 0) {
-      alert("No orders selected");
       return;
     }
     
@@ -190,17 +179,14 @@ export function OrderManagement() {
     }
     
     if (Object.keys(changes).length === 0) {
-      alert("No changes specified");
       return;
     }
     
     console.log("Modifying orders with changes:", changes);
-    alert(`Orders updated with specified changes`);
   };
 
   const handleCloneOrders = () => {
     if (selectedOrderIds.length === 0) {
-      alert("No orders selected");
       return;
     }
     
@@ -240,7 +226,6 @@ export function OrderManagement() {
     }
     
     console.log("Cloning orders with config:", cloneConfig);
-    alert(`${selectedOrderIds.length} orders cloned`);
   };
 
   // Handle date time picker changes
@@ -308,9 +293,66 @@ export function OrderManagement() {
     return changes;
   };
 
-  const handleActionChange = (event: SelectChangeEvent) => {
+  const handleActionChange = (event: SelectChangeEvent<string>) => {
     setActiveAction(event.target.value);
   };
+
+  // Action options for the select dropdown
+  const actionOptions = [
+    {
+      value: "modify",
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <AccessTime sx={{ fontSize: 16, mr: 1 }} />
+          <span>Modify Orders</span>
+        </Box>
+      )
+    },
+    {
+      value: "clone",
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <ContentCopy sx={{ fontSize: 16, mr: 1 }} />
+          <span>Clone Orders</span>
+        </Box>
+      )
+    },
+    {
+      value: "delete-selected",
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+          <span>Delete Selected</span>
+        </Box>
+      )
+    },
+    {
+      value: "delete-all",
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+          <span>Delete All</span>
+        </Box>
+      )
+    }
+  ];
+
+  // Create options arrays for select components
+  const stemTimeOptions = [
+    { value: "none", label: "Keep current" },
+    ...STEM_TIME_OPTIONS.map(option => ({ 
+      value: option, 
+      label: formatStemTime(option) 
+    }))
+  ];
+
+  const radiusOptions = [
+    { value: "none", label: "Keep current" },
+    ...RADIUS_OPTIONS.map(option => ({ 
+      value: option, 
+      label: option 
+    }))
+  ];
 
   return (
     <Paper 
@@ -323,40 +365,29 @@ export function OrderManagement() {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-      <FormControl sx={{width:200}} size="small">
-        <InputLabel id="action-select-label">Select action</InputLabel>
-        <Select
-          labelId="action-select-label"
-          value={activeAction}
-          onChange={handleActionChange}
-          label="Select action"
-        >
-          <MenuItem value="modify">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AccessTime sx={{ fontSize: 16, mr: 1 }} />
-              <span>Modify Orders</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="clone">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ContentCopy sx={{ fontSize: 16, mr: 1 }} />
-              <span>Clone Orders</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="delete-selected">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
-              <span>Delete Selected</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="delete-all">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
-              <span>Delete All</span>
-            </Box>
-          </MenuItem>
-        </Select>
-      </FormControl>
+        <Box sx={{ width: 200 }}>
+          <LoadboardSelect
+            id="action-select-label"
+            label="Select action"
+            value={activeAction}
+            onChange={handleActionChange}
+            options={[
+              { value: "", label: "" },
+              ...actionOptions.map(option => ({
+                value: option.value,
+                label: typeof option.label === 'string' 
+                  ? option.label 
+                  : option.value === "modify" 
+                    ? "Modify Orders"
+                    : option.value === "clone"
+                    ? "Clone Orders"
+                    : option.value === "delete-selected"
+                    ? "Delete Selected"
+                    : "Delete All"
+              }))
+            ]}
+          />
+        </Box>
         <Box 
           sx={{ 
             px: 1, 
@@ -406,104 +437,59 @@ export function OrderManagement() {
                   value={minPayout}
                   onChange={(e) => setMinPayout(e.target.value)}
                   placeholder="Keep current"
-                  size="small"
                   fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  InputProps={{
-                    inputProps: { 
-                      // style: { height: '14px' } 
-                    }
-                  }}
                 />
               </Grid>
               <Grid item xs={6}>
-                <TextField
+                <LoadboardTextField
                   label="Min Price/Mile ($)"
-                  type="number"
-                  inputProps={{ step: "0.1" }}
                   value={minPricePerMile}
                   onChange={(e) => setMinPricePerMile(e.target.value)}
                   placeholder="Keep current"
-                  size="small"
                   fullWidth
-                  InputProps={{
-                    inputProps: { 
-                      style: { height: '14px' } 
-                    }
-                  }}
                 />
               </Grid>
             </Grid>
             
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="stem-time-label">Stem Time</InputLabel>
-                  <Select
-                    labelId="stem-time-label"
-                    value={stemTime}
-                    onChange={(e) => setStemTime(e.target.value)}
-                    label="Stem Time"
-                  >
-                    <MenuItem value="none">Keep current</MenuItem>
-                    {STEM_TIME_OPTIONS.map(option => (
-                      <MenuItem key={option} value={option}>{formatStemTime(option)}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <LoadboardSelect
+                  id="stem-time-label"
+                  label="Stem Time"
+                  value={stemTime}
+                  onChange={(e) => setStemTime(e.target.value)}
+                  options={stemTimeOptions}
+                />
               </Grid>
               <Grid item xs={6}>
-                <TextField
+                <LoadboardTextField
                   label="Max Stops"
-                  type="number"
                   value={maxStops}
                   onChange={(e) => setMaxStops(e.target.value)}
                   placeholder="Keep current"
-                  size="small"
                   fullWidth
-                  InputProps={{
-                    inputProps: { 
-                      style: { height: '14px' } 
-                    }
-                  }}
                 />
               </Grid>
             </Grid>
             
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="origin-radius-label">Origin Radius (miles)</InputLabel>
-                  <Select
-                    labelId="origin-radius-label"
-                    value={originRadius}
-                    onChange={(e) => setOriginRadius(e.target.value)}
-                    label="Origin Radius (miles)"
-                  >
-                    <MenuItem value="none">Keep current</MenuItem>
-                    {RADIUS_OPTIONS.map(option => (
-                      <MenuItem key={option} value={option}>{option}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <LoadboardSelect
+                  id="origin-radius-label"
+                  label="Origin Radius (miles)"
+                  value={originRadius}
+                  onChange={(e) => setOriginRadius(e.target.value)}
+                  options={radiusOptions}
+                />
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="destination-radius-label">Dest. Radius (miles)</InputLabel>
-                  <Select
-                    labelId="destination-radius-label"
-                    value={destinationRadius}
-                    onChange={(e) => setDestinationRadius(e.target.value)}
-                    label="Dest. Radius (miles)"
-                  >
-                    <MenuItem value="none">Keep current</MenuItem>
-                    {RADIUS_OPTIONS.map(option => (
-                      <MenuItem key={option} value={option}>{option}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <LoadboardSelect
+                  id="destination-radius-label"
+                  label="Dest. Radius (miles)"
+                  value={destinationRadius}
+                  onChange={(e) => setDestinationRadius(e.target.value)}
+                  options={radiusOptions}
+                />
               </Grid>
             </Grid>
             

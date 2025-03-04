@@ -7,15 +7,15 @@ const AmzDateTimePicker = styled(DateTimePicker)(({ theme }) => ({
   '& .MuiFilledInput-root': {
     overflow: 'hidden',
     borderRadius: 4,
-    fontSize: "0.9rem",
-    backgroundColor: "#fff",
+    fontSize: "0.8rem",
+    backgroundColor: "transparent",
     border: '1px solid',
     borderColor: "#6f7880",
     '&:hover': {
-      backgroundColor: "#fff",
+      backgroundColor: "transparent",
     },
     '&.Mui-focused': {
-      backgroundColor: "#fff",
+      backgroundColor: "transparent",
       boxShadow: "0px 0px 0px 1px #00688d",
       borderColor: theme.palette.primary.main,
     },
@@ -54,30 +54,30 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
   };
 
   return (
-      <AmzDateTimePicker
-        onChange={(newValue) => handleChange(newValue)}
-        open={open}
-        onOpen={() => handleToggleOpen(true)}
-        disablePast
-        label={index === 0 ? "Start Date/Time" : "End Date/Time"}
-        value={getDateValue()}
-        ampm={false}
-        format="MM/DD HH:mm"
-        onClose={() => handleToggleOpen(false)}
-        slotProps={{
-          actionBar: { actions: ['clear', 'accept'] },
-          field: { shouldRespectLeadingZeros: true, clearable: true },
-          textField: {
-            placeholder: '',
-            variant: 'filled',
-            InputLabelProps: { shrink: true },
-            InputProps: {
-              disableUnderline: true,
-              onClick: () => { if (!value) handleToggleOpen(true); },
-            },
+    <AmzDateTimePicker
+      onChange={(newValue) => handleChange(newValue)}
+      open={open}
+      onOpen={() => handleToggleOpen(true)}
+      disablePast
+      label={index === 0 ? "Start Date/Time" : "End Date/Time"}
+      value={getDateValue()}
+      ampm={false}
+      format="MM/DD HH:mm"
+      onClose={() => handleToggleOpen(false)}
+      slotProps={{
+        actionBar: { actions: ['clear', 'accept'] },
+        field: { shouldRespectLeadingZeros: true, clearable: true },
+        textField: {
+          placeholder: '',
+          variant: 'filled',
+          InputLabelProps: { shrink: true },
+          InputProps: {
+            disableUnderline: true,
+            onClick: () => { if (!value) handleToggleOpen(true); },
           },
-        }}
-      />
+        },
+      }}
+    />
   );
 };
 
