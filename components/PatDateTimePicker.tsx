@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { styled } from "@mui/material/styles";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from "dayjs";
@@ -42,7 +42,9 @@ const AmzDateTimePicker = styled(DateTimePicker)(({ theme }) => ({
 const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({ 
   index, 
   value, 
-  handleChange
+  isOpen,
+  handleChange,
+  handleOpenChange
 }) => {
   const getDateValue = () => {
     if (!value) return null;
@@ -50,13 +52,13 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
     return date.isValid() ? date : null;
   };
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
   return (
     <AmzDateTimePicker
       onChange={(newValue) => handleChange(newValue)}
       disablePast
-      
+      open={isOpen}
+      onOpen={() => handleOpenChange(true)}
+      onClose={() => handleOpenChange(false)}
       label={index === 0 ? "Start Date/Time" : "End Date/Time"}
       value={getDateValue()}
       ampm={false}
@@ -72,15 +74,13 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
           InputProps: {
             value: value ? dayjs(new Date(value)).format('MM/DD HH:mm') : '',
             disableUnderline: true,
-            onClick: (e) => {
-              if (!value)
-                // open calendar if no date
-              setIsOpen(true);
+            onClick: () => {
+              if (!isOpen) {
+                handleOpenChange(true);
+              }
             },
           },
         },
-
-        
       }}
     />
   );

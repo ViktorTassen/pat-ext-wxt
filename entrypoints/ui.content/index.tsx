@@ -69,7 +69,7 @@ export default defineContentScript({
     });
 
     // Create the checkbox UI
-    function createCheckboxUi(anchor: HTMLElement) {
+    function createCheckboxUi(anchor: HTMLElement, orderId: string) {
       return createIntegratedUi(ctx, {
         position: 'inline',
         anchor,
@@ -96,12 +96,29 @@ export default defineContentScript({
         for (const mutation of mutations) {
           if (!mutation.addedNodes.length) continue;
           
-          const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
-          
+          // const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
+          const orderIdElements = document.querySelectorAll("label:has([role='checkbox'])");
+
           for (const element of orderIdElements) {
-            element.setAttribute("data-checkbox-initialized", "true");
-            const checkboxUi = createCheckboxUi(element as HTMLElement);
+            const parent = element.parentElement;
+            if (!parent) continue;
+            // delete children of element
+            if (parent.firstChild) {
+              parent.removeChild(parent.firstChild);
+            };
+
+            const orderIdElement = parent.parentElement?.querySelector('.order-id');
+            const orderIdText = orderIdElement?.textContent?.trim();
+            
+            parent.setAttribute("data-checkbox-initialized", "true");
+            const checkboxUi = createCheckboxUi(parent, orderIdText);
             checkboxUi.mount();
+
+
+            // if (element.parentElement) {
+            //   const checkboxUi = createCheckboxUi(element.parentElement.parentElement);
+            //   checkboxUi.mount();
+            // }
           }
         }
       });
