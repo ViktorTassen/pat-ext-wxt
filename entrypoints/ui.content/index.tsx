@@ -1,6 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import './style.css';
 
 export default defineContentScript({
@@ -18,7 +20,11 @@ export default defineContentScript({
         // Create and render the OrderManagement component
         const managementContainer = document.createElement('div');
         const root = createRoot(managementContainer);
-        root.render(<OrderManagement />);
+        root.render(
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <OrderManagement />
+          </LocalizationProvider>
+        );
         
         // Prepend the management panel to the container's parent
         container.parentElement?.prepend(managementContainer);

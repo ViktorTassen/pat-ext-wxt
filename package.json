@@ -15,6 +15,10 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.14",
+    "@mui/x-date-pickers": "^6.19.8",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.0.2",
@@ -28,6 +32,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^0.2.1",
     "date-fns": "^3.3.1",
+    "dayjs": "^1.11.10",
     "lucide-react": "^0.363.0",
     "react": "^19.0.0",
     "react-day-picker": "^8.10.0",
