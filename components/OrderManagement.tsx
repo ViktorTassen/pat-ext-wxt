@@ -18,7 +18,8 @@ import {
 import { DeleteOutline, ContentCopy, AccessTime, Warning } from "@mui/icons-material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -52,8 +53,8 @@ export function OrderManagement() {
   const [activeAction, setActiveAction] = useState("");
   
   // Date time states
-  const [startDateTime, setStartDateTime] = useState<Date | null>(null);
-  const [endDateTime, setEndDateTime] = useState<Date | null>(null);
+  const [startDateTime, setStartDateTime] = useState<dayjs.Dayjs | null>(null);
+  const [endDateTime, setEndDateTime] = useState<dayjs.Dayjs | null>(null);
   
   // Other form states - empty string means "don't change"
   const [minPayout, setMinPayout] = useState<string>("");
@@ -168,11 +169,11 @@ export function OrderManagement() {
     const changes: Record<string, any> = {};
     
     if (startDateTime) {
-      changes.startDateTime = format(startDateTime, "yyyy-MM-dd HH:mm");
+      changes.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (endDateTime) {
-      changes.endDateTime = format(endDateTime, "yyyy-MM-dd HH:mm");
+      changes.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (minPayout) {
@@ -219,11 +220,11 @@ export function OrderManagement() {
     const cloneConfig: Record<string, any> = {};
     
     if (startDateTime) {
-      cloneConfig.startDateTime = format(startDateTime, "yyyy-MM-dd HH:mm");
+      cloneConfig.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (endDateTime) {
-      cloneConfig.endDateTime = format(endDateTime, "yyyy-MM-dd HH:mm");
+      cloneConfig.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (minPayout) {
@@ -261,17 +262,17 @@ export function OrderManagement() {
     
     if (startDateTime) {
       if (activeAction === "modify") {
-        changes.push(`New Start Date/Time: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
       } else {
-        changes.push(`New Start Date/Time: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New Start Date/Time: ${startDateTime.format("YYYY-MM-DD HH:mm")}`);
       }
     }
     
     if (endDateTime) {
       if (activeAction === "modify") {
-        changes.push(`New End Date/Time: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
       } else {
-        changes.push(`New End Date/Time: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New End Date/Time: ${endDateTime.format("YYYY-MM-DD HH:mm")}`);
       }
     }
     
@@ -377,7 +378,7 @@ export function OrderManagement() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DateTimePicker
                     label="New Start Date/Time"
                     value={startDateTime}
@@ -385,12 +386,12 @@ export function OrderManagement() {
                     slotProps={{
                       textField: { size: 'small', fullWidth: true }
                     }}
-                    format="MM/dd/yyyy HH:mm"
+                    format="MM/DD/YYYY HH:mm"
                   />
                 </LocalizationProvider>
               </Grid>
               <Grid item xs={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DateTimePicker
                     label="New End Date/Time"
                     value={endDateTime}
@@ -398,7 +399,7 @@ export function OrderManagement() {
                     slotProps={{
                       textField: { size: 'small', fullWidth: true }
                     }}
-                    format="MM/dd/yyyy HH:mm"
+                    format="MM/DD/YYYY HH:mm"
                   />
                 </LocalizationProvider>
               </Grid>
