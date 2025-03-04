@@ -98,9 +98,9 @@ export function OrderManagement() {
       setStartDateTime(undefined);
       setEndDateTime(undefined);
     } else if (activeAction === "clone") {
-      // For clone, default to current date/time
-      setStartDateTime(new Date());
-      setEndDateTime(new Date());
+      // For clone, reset to undefined (not prefilled)
+      setStartDateTime(undefined);
+      setEndDateTime(undefined);
     } else {
       // For other actions, reset all fields
       setStartDateTime(undefined);
@@ -203,19 +203,17 @@ export function OrderManagement() {
       return;
     }
     
-    // Required fields for cloning
-    if (!startDateTime || !endDateTime) {
-      alert("Start and end date/time are required for cloning");
-      return;
+    // Build clone configuration - all fields are optional
+    const cloneConfig: Record<string, any> = {};
+    
+    if (startDateTime) {
+      cloneConfig.startDateTime = format(startDateTime, "yyyy-MM-dd HH:mm");
     }
     
-    // Build clone configuration
-    const cloneConfig: Record<string, any> = {
-      startDateTime: format(startDateTime, "yyyy-MM-dd HH:mm"),
-      endDateTime: format(endDateTime, "yyyy-MM-dd HH:mm"),
-    };
+    if (endDateTime) {
+      cloneConfig.endDateTime = format(endDateTime, "yyyy-MM-dd HH:mm");
+    }
     
-    // Add optional fields if provided
     if (minPayout) {
       cloneConfig.minPayout = minPayout;
     }
@@ -251,17 +249,17 @@ export function OrderManagement() {
     
     if (startDateTime) {
       if (activeAction === "modify") {
-        changes.push(`Start time: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New Start Date/Time: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
       } else {
-        changes.push(`New start: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New Start Date/Time: ${format(startDateTime, "yyyy-MM-dd HH:mm")}`);
       }
     }
     
     if (endDateTime) {
       if (activeAction === "modify") {
-        changes.push(`End time: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New End Date/Time: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
       } else {
-        changes.push(`New end: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
+        changes.push(`New End Date/Time: ${format(endDateTime, "yyyy-MM-dd HH:mm")}`);
       }
     }
     
@@ -340,34 +338,28 @@ export function OrderManagement() {
           <h4 className="text-sm font-medium mb-2">
             {activeAction === "modify" ? "Modify Orders" : "Clone Orders"}
           </h4>
-          <p className="text-xs text-gray-500 mb-3">
-            {activeAction === "modify" 
-              ? "Leave fields empty to keep current values" 
-              : "Start/end times required, other fields optional"}
-          </p>
           
           <div className="space-y-3">
             <div className="flex flex-row gap-2">
               <div className="flex flex-col w-full">
                 <Label htmlFor="start-date-time" className="text-xs mb-1">
-                  {activeAction === "modify" ? "Start Date/Time" : "New Start Date/Time*"}
+                  New Start Date/Time
                 </Label>
                 <DateTimePicker24h
-               
+                  value={startDateTime}
+                  onChange={setStartDateTime}
                 />
               </div>
               <div className="flex flex-col w-full">
                 <Label htmlFor="end-date-time" className="text-xs mb-1">
-                  {activeAction === "modify" ? "End Date/Time" : "New End Date/Time*"}
+                  New End Date/Time
                 </Label>
                 <DateTimePicker24h
-    
-
+                  value={endDateTime}
+                  onChange={setEndDateTime}
                 />
               </div>
             </div>
-            
-            <Separator className="my-2" />
             
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -377,7 +369,7 @@ export function OrderManagement() {
                   type="number" 
                   value={minPayout} 
                   onChange={(e) => setMinPayout(e.target.value)}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm no-number-arrows"
                   placeholder="Keep current" 
                 />
               </div>
@@ -389,7 +381,7 @@ export function OrderManagement() {
                   step="0.1" 
                   value={minPricePerMile} 
                   onChange={(e) => setMinPricePerMile(e.target.value)}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm no-number-arrows"
                   placeholder="Keep current" 
                 />
               </div>
@@ -417,7 +409,7 @@ export function OrderManagement() {
                   type="number" 
                   value={maxStops} 
                   onChange={(e) => setMaxStops(e.target.value)}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm no-number-arrows"
                   placeholder="Keep current" 
                 />
               </div>
@@ -473,11 +465,7 @@ export function OrderManagement() {
             
             <Button 
               onClick={activeAction === "modify" ? handleModifyOrders : handleCloneOrders}
-              disabled={
-                selectedOrderIds.length === 0 || 
-                (activeAction === "modify" && getChangesSummary().length === 0) ||
-                (activeAction === "clone" && (!startDateTime || !endDateTime))
-              }
+              disabled={selectedOrderIds.length === 0}
               className="w-full h-8 text-sm mt-2"
             >
               {activeAction === "modify" ? "Update" : "Clone"} {selectedOrderIds.length} Order{selectedOrderIds.length !== 1 ? 's' : ''}
@@ -489,25 +477,6 @@ export function OrderManagement() {
       {activeAction === "delete-selected" && (
         <div className="bg-gray-50 p-3 rounded-md">
           <div className="space-y-3">
-            <div className="flex items-center text-amber-800 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              <h4 className="text-sm font-medium">Warning</h4>
-            </div>
-            
-            <div className="bg-amber-50 p-2 rounded border border-amber-200">
-              <p className="text-xs text-amber-800">
-                Deleting orders cannot be undone. Please confirm your selection before proceeding.
-              </p>
-            </div>
-            
-            <div className="bg-blue-50 p-2 rounded border border-blue-200">
-              <h4 className="text-xs font-medium text-blue-800 mb-1">Operation details:</h4>
-              <ul className="text-xs text-blue-700 pl-5 list-disc">
-                <li>Action: Delete selected orders</li>
-                <li>Orders to delete: {selectedOrderIds.length}</li>
-              </ul>
-            </div>
-            
             <Button 
               variant="destructive" 
               onClick={handleDeleteSelectedOrders}
@@ -523,31 +492,12 @@ export function OrderManagement() {
       {activeAction === "delete-all" && (
         <div className="bg-gray-50 p-3 rounded-md">
           <div className="space-y-3">
-            <div className="flex items-center text-amber-800 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              <h4 className="text-sm font-medium">Warning</h4>
-            </div>
-            
-            <div className="bg-amber-50 p-2 rounded border border-amber-200">
-              <p className="text-xs text-amber-800">
-                This will delete ALL orders. This action cannot be undone.
-              </p>
-            </div>
-            
-            <div className="bg-blue-50 p-2 rounded border border-blue-200">
-              <h4 className="text-xs font-medium text-blue-800 mb-1">Operation details:</h4>
-              <ul className="text-xs text-blue-700 pl-5 list-disc">
-                <li>Action: Delete all orders</li>
-                <li>Total orders: {allOrders.length}</li>
-              </ul>
-            </div>
-            
             <Button 
               variant="destructive" 
               onClick={handleDeleteAllOrders}
               className="w-full h-8 text-sm"
             >
-              Delete All Orders
+              Delete All Orders ({allOrders.length})
             </Button>
           </div>
         </div>

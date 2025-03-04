@@ -48,7 +48,16 @@
   --radius: 0.5rem;
  }
 
+/* Hide number input arrows */
+.no-number-arrows::-webkit-outer-spin-button,
+.no-number-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
+.no-number-arrows {
+  -moz-appearance: textfield;
+}
 
 /* Hide Amazon checkboxes */ 
  label:has([role="checkbox"]) {
