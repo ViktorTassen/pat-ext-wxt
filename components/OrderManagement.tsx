@@ -3,13 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { Trash2, Copy, Clock, AlertTriangle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
+
+// Stem time options in minutes
+const STEM_TIME_OPTIONS = ["5", "15", "30", "45", "60", "90", "120", "150", "180", "210", "240", "480", "720", "1440"];
 
 export function OrderManagement() {
   // State for selected order IDs
@@ -27,7 +30,7 @@ export function OrderManagement() {
   // Other form states - empty string means "don't change"
   const [minPayout, setMinPayout] = useState<string>("");
   const [minPricePerMile, setMinPricePerMile] = useState<string>("");
-  const [stemTime, setStemTime] = useState<string>("");
+  const [stemTime, setStemTime] = useState<string>("none");
   const [originRadius, setOriginRadius] = useState<string>("none");
   const [destinationRadius, setDestinationRadius] = useState<string>("none");
   const [maxStops, setMaxStops] = useState<string>("");
@@ -91,7 +94,7 @@ export function OrderManagement() {
     // Always reset these fields
     setMinPayout("");
     setMinPricePerMile("");
-    setStemTime("");
+    setStemTime("none");
     setOriginRadius("none");
     setDestinationRadius("none");
     setMaxStops("");
@@ -152,7 +155,7 @@ export function OrderManagement() {
       changes.minPricePerMile = minPricePerMile;
     }
     
-    if (stemTime) {
+    if (stemTime && stemTime !== "none") {
       changes.stemTime = stemTime;
     }
     
@@ -205,7 +208,7 @@ export function OrderManagement() {
       cloneConfig.minPricePerMile = minPricePerMile;
     }
     
-    if (stemTime) {
+    if (stemTime && stemTime !== "none") {
       cloneConfig.stemTime = stemTime;
     }
     
@@ -254,7 +257,7 @@ export function OrderManagement() {
       changes.push(`Min price per mile: $${minPricePerMile}`);
     }
     
-    if (stemTime) {
+    if (stemTime && stemTime !== "none") {
       changes.push(`Stem time: ${stemTime} minutes`);
     }
     
@@ -333,18 +336,21 @@ export function OrderManagement() {
                 <Label htmlFor="start-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "Start Date/Time" : "New Start Date/Time*"}
                 </Label>
-                <DateTimePicker24h 
-              
-                
-               
-                
+                <DateTimePicker
+                  date={startDateTime}
+                  setDate={setStartDateTime}
+                  label="Select date and time"
                 />
               </div>
               <div className="flex flex-col w-full">
                 <Label htmlFor="end-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "End Date/Time" : "New End Date/Time*"}
                 </Label>
-
+                <DateTimePicker
+                  date={endDateTime}
+                  setDate={setEndDateTime}
+                  label="Select date and time"
+                />
               </div>
             </div>
             
@@ -379,14 +385,17 @@ export function OrderManagement() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label htmlFor="stem-time" className="text-xs">Stem Time (min)</Label>
-                <Input 
-                  id="stem-time" 
-                  type="number" 
-                  value={stemTime} 
-                  onChange={(e) => setStemTime(e.target.value)}
-                  className="h-8 text-sm"
-                  placeholder="Keep current" 
-                />
+                <Select value={stemTime} onValueChange={setStemTime}>
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue placeholder="Keep current" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Keep current</SelectItem>
+                    {STEM_TIME_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="max-stops" className="text-xs">Max Stops</Label>
