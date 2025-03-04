@@ -6,13 +6,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { Trash2, Copy, Clock, AlertTriangle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DateTimePicker24h } from "@/components/ui/date-time-picker";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
 
 // Stem time options in minutes
 const STEM_TIME_OPTIONS = ["5", "15", "30", "45", "60", "90", "120", "150", "180", "210", "240", "480", "720", "1440"];
+
+// Format stem time to be more readable
+const formatStemTime = (minutes: string): string => {
+  const mins = parseInt(minutes, 10);
+  if (mins < 60) {
+    return `${mins} min`;
+  } else {
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    if (remainingMins === 0) {
+      return `${hours} hr`;
+    } else {
+      return `${hours} hr ${remainingMins} min`;
+    }
+  }
+};
 
 export function OrderManagement() {
   // State for selected order IDs
@@ -258,7 +274,7 @@ export function OrderManagement() {
     }
     
     if (stemTime && stemTime !== "none") {
-      changes.push(`Stem time: ${stemTime} minutes`);
+      changes.push(`Stem time: ${formatStemTime(stemTime)}`);
     }
     
     if (maxStops) {
@@ -336,20 +352,17 @@ export function OrderManagement() {
                 <Label htmlFor="start-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "Start Date/Time" : "New Start Date/Time*"}
                 </Label>
-                <DateTimePicker
-                  date={startDateTime}
-                  setDate={setStartDateTime}
-                  label="Select date and time"
+                <DateTimePicker24h
+               
                 />
               </div>
               <div className="flex flex-col w-full">
                 <Label htmlFor="end-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "End Date/Time" : "New End Date/Time*"}
                 </Label>
-                <DateTimePicker
-                  date={endDateTime}
-                  setDate={setEndDateTime}
-                  label="Select date and time"
+                <DateTimePicker24h
+    
+
                 />
               </div>
             </div>
@@ -384,7 +397,7 @@ export function OrderManagement() {
             
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="stem-time" className="text-xs">Stem Time (min)</Label>
+                <Label htmlFor="stem-time" className="text-xs">Stem Time</Label>
                 <Select value={stemTime} onValueChange={setStemTime}>
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Keep current" />
@@ -392,7 +405,7 @@ export function OrderManagement() {
                   <SelectContent>
                     <SelectItem value="none">Keep current</SelectItem>
                     {STEM_TIME_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                      <SelectItem key={option} value={option}>{formatStemTime(option)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
