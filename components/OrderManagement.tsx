@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format, parse } from "date-fns";
 import { Trash2, Copy, Clock, AlertTriangle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { DatePicker, TimePicker } from "@/components/ui/date-time-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -328,37 +328,23 @@ export function OrderManagement() {
           </p>
           
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-row gap-2">
               <div className="flex flex-col w-full">
-                <DatePicker 
-                  date={startDateTime}
-                  setDate={setStartDateTime}
-                  label={activeAction === "modify" ? "Start Date" : "New Start Date*"}
+                <Label htmlFor="start-date-time" className="text-xs mb-1">
+                  {activeAction === "modify" ? "Start Date/Time" : "New Start Date/Time*"}
+                </Label>
+                <DateTimePicker24h 
+              
+                
+               
+                
                 />
               </div>
               <div className="flex flex-col w-full">
-                <TimePicker 
-                  date={startDateTime}
-                  setDate={setStartDateTime}
-                  label={activeAction === "modify" ? "Start Time" : "New Start Time*"}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col w-full">
-                <DatePicker 
-                  date={endDateTime}
-                  setDate={setEndDateTime}
-                  label={activeAction === "modify" ? "End Date" : "New End Date*"}
-                />
-              </div>
-              <div className="flex flex-col w-full">
-                <TimePicker 
-                  date={endDateTime}
-                  setDate={setEndDateTime}
-                  label={activeAction === "modify" ? "End Time" : "New End Time*"}
-                />
+                <Label htmlFor="end-date-time" className="text-xs mb-1">
+                  {activeAction === "modify" ? "End Date/Time" : "New End Date/Time*"}
+                </Label>
+
               </div>
             </div>
             
@@ -366,52 +352,60 @@ export function OrderManagement() {
             
             <div className="grid grid-cols-2 gap-2">
               <div>
+                <Label htmlFor="min-payout" className="text-xs">Min Payout ($)</Label>
                 <Input 
                   id="min-payout" 
                   type="number" 
                   value={minPayout} 
                   onChange={(e) => setMinPayout(e.target.value)}
-                  label="Min Payout ($)"
+                  className="h-8 text-sm"
+                  placeholder="Keep current" 
                 />
               </div>
               <div>
+                <Label htmlFor="min-price-per-mile" className="text-xs">Min Price/Mile ($)</Label>
                 <Input 
                   id="min-price-per-mile" 
                   type="number" 
                   step="0.1" 
                   value={minPricePerMile} 
                   onChange={(e) => setMinPricePerMile(e.target.value)}
-                  label="Min Price/Mile ($)"
+                  className="h-8 text-sm"
+                  placeholder="Keep current" 
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-2">
               <div>
+                <Label htmlFor="stem-time" className="text-xs">Stem Time (min)</Label>
                 <Input 
                   id="stem-time" 
                   type="number" 
                   value={stemTime} 
                   onChange={(e) => setStemTime(e.target.value)}
-                  label="Stem Time (min)"
+                  className="h-8 text-sm"
+                  placeholder="Keep current" 
                 />
               </div>
               <div>
+                <Label htmlFor="max-stops" className="text-xs">Max Stops</Label>
                 <Input 
                   id="max-stops" 
                   type="number" 
                   value={maxStops} 
                   onChange={(e) => setMaxStops(e.target.value)}
-                  label="Max Stops"
+                  className="h-8 text-sm"
+                  placeholder="Keep current" 
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="origin-radius" className="text-xs mb-1">Origin Radius (miles)</Label>
+                <Label htmlFor="origin-radius" className="text-xs">Origin Radius (miles)</Label>
                 <Select value={originRadius} onValueChange={setOriginRadius}>
-                  <SelectTrigger className="h-10 text-sm">
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Keep current" />
                   </SelectTrigger>
                   <SelectContent>
@@ -423,9 +417,9 @@ export function OrderManagement() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="destination-radius" className="text-xs mb-1">Dest. Radius (miles)</Label>
+                <Label htmlFor="destination-radius" className="text-xs">Dest. Radius (miles)</Label>
                 <Select value={destinationRadius} onValueChange={setDestinationRadius}>
-                  <SelectTrigger className="h-10 text-sm">
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Keep current" />
                   </SelectTrigger>
                   <SelectContent>
