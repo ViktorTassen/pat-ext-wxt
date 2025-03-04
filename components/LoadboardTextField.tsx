@@ -1,29 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { styled } from "@mui/material/styles";
-import { TextField, type OutlinedInputProps, type TextFieldProps } from "@mui/material";
+import { TextField, type TextFieldProps } from "@mui/material";
 
-interface LoadboardFilterProps {
-  filter?: any;
-  index?: number;
+interface LoadboardTextFieldProps {
   label: string;
-  value: any;
+  value: string;
   placeholder: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>, index?: number, field?: string) => void;
-  expanded?: boolean;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   size?: "small" | "medium";
   fullWidth?: boolean;
   InputLabelProps?: object;
   InputProps?: object;
 }
 
-// CUSTOM CSS STYLED
-const AmzTextField = styled((props: TextFieldProps) => (
-  <TextField
-    variant="filled"
-    InputProps={{ disableUnderline: true, inputProps: { min: 0, inputMode: 'decimal' } } as Partial<OutlinedInputProps>}
-    {...props}
-  />
-))(({ theme }) => ({
+const AmzTextField = styled(TextField)(({ theme }) => ({
   '& .MuiFilledInput-root': {
     overflow: 'hidden',
     borderRadius: 4,
@@ -31,13 +21,22 @@ const AmzTextField = styled((props: TextFieldProps) => (
     backgroundColor: "transparent",
     border: '1px solid',
     borderColor: "#6f7880",
+    transition: theme.transitions.create([
+      'border-color',
+      'background-color',
+      'box-shadow',
+    ]),
     '&:hover': {
       backgroundColor: "transparent",
+      borderColor: theme.palette.primary.main,
     },
     '&.Mui-focused': {
       backgroundColor: "transparent",
-      boxShadow: "0px 0px 0px 1px #00688d",
+      boxShadow: `0px 0px 0px 1px ${theme.palette.primary.main}`,
       borderColor: theme.palette.primary.main,
+    },
+    '&:before, &:after': {
+      display: 'none',
     },
   },
   "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
@@ -48,47 +47,33 @@ const AmzTextField = styled((props: TextFieldProps) => (
   },
 }));
 
-const LoadboardTextField: React.FC<LoadboardFilterProps> = ({ 
-  filter, 
-  index, 
+const LoadboardTextField: React.FC<LoadboardTextFieldProps> = ({ 
   label, 
   value, 
   placeholder, 
   onChange, 
-  expanded,
   size = "small",
   fullWidth = false,
   InputLabelProps = {},
   InputProps = {}
 }) => {
-  const [error, setError] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    if (inputValue.trim() === "") {
-      setError(true);
-    } else {
-      setError(false);
-    }
-    onChange(e, index, label);
-  };
-
   return (
     <AmzTextField
+      variant="filled"
       size={size}
       type="number"
-      placeholder={placeholder}
-      error={error}
       label={label}
       value={value}
-      onChange={handleInputChange}
+      onChange={onChange}
+      placeholder={placeholder}
       fullWidth={fullWidth}
       InputLabelProps={{
         shrink: true,
-        
         ...InputLabelProps
       }}
-      InputProps={InputProps}
+      InputProps={{
+        ...InputProps
+      }}
     />
   );
 };

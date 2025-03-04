@@ -1,11 +1,10 @@
-import React, { useRef, useLayoutEffect, useState } from "react";
+import React from "react";
 import { styled } from "@mui/material/styles";
 import { 
   FormControl, 
   InputLabel, 
   Select, 
   MenuItem,
-  type SelectProps,
   type SelectChangeEvent
 } from "@mui/material";
 
@@ -14,12 +13,11 @@ interface LoadboardSelectProps {
   label: string;
   value: string;
   onChange: (event: SelectChangeEvent<string>) => void;
-  options: Array<{value: string, label: string }>;
+  options: Array<{value: string, label: string}>;
   fullWidth?: boolean;
   size?: "small" | "medium";
 }
 
-// Styled Select component to match other inputs
 const AmzSelect = styled(Select)(({ theme }) => ({
   '&.MuiFilledInput-root': {
     overflow: 'hidden',
@@ -28,13 +26,22 @@ const AmzSelect = styled(Select)(({ theme }) => ({
     backgroundColor: "transparent",
     border: '1px solid',
     borderColor: "#6f7880",
+    transition: theme.transitions.create([
+      'border-color',
+      'background-color',
+      'box-shadow',
+    ]),
     '&:hover': {
       backgroundColor: "transparent",
+      borderColor: theme.palette.primary.main,
     },
     '&.Mui-focused': {
       backgroundColor: "transparent",
-      boxShadow: "0px 0px 0px 1px #00688d",
+      boxShadow: `0px 0px 0px 1px ${theme.palette.primary.main}`,
       borderColor: theme.palette.primary.main,
+    },
+    '&:before, &:after': {
+      display: 'none',
     },
   }
 }));
@@ -48,15 +55,6 @@ const LoadboardSelect: React.FC<LoadboardSelectProps> = ({
   fullWidth = true,
   size = "small",
 }) => {
-
-  const MenuProps = {
-    PaperProps: {
-      style: {
-        maxHeight: 300,
-      },
-    },
-  };
-
   return (
     <FormControl fullWidth={fullWidth} variant="filled" size={size}>
       <InputLabel shrink id={id}>{label}</InputLabel>
@@ -65,13 +63,15 @@ const LoadboardSelect: React.FC<LoadboardSelectProps> = ({
         value={value}
         onChange={(event) => onChange(event as SelectChangeEvent<string>)}
         label={label}
-        MenuProps={{ ...MenuProps }}
-        size={size}
-        disableUnderline
-        fullWidth
-        sx={{
-          minWidth: '120px',
+        MenuProps={{
+          PaperProps: {
+            style: {
+              maxHeight: 300,
+            },
+          },
         }}
+        size={size}
+        fullWidth
       >
         {options.map((option) => (
           <MenuItem key={option.value} value={option.value}>
