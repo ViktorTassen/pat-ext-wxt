@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 export function OrderCheckbox() {
@@ -13,10 +13,14 @@ export function OrderCheckbox() {
     
     if (orderId) {
       console.log(`Order ${orderId} ${checked ? 'selected' : 'unselected'}`)
-      // Here you could implement additional functionality like:
-      // - Storing selected orders in state
-      // - Highlighting the entire row
-      // - Adding batch actions for selected orders
+      
+      // Dispatch a custom event to notify the OrderManagement component
+      window.dispatchEvent(new CustomEvent('orderSelected', {
+        detail: {
+          orderId,
+          selected: checked
+        }
+      }));
     }
   }
 

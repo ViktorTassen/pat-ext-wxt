@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
-import { CalendarWidget } from '@/components/CalendarWidget'; // Update this path to match where your CalendarWidget is located
+import { OrderManagement } from '@/components/OrderManagement';
 import './style.css';
 
 export default defineContentScript({
@@ -15,13 +15,13 @@ export default defineContentScript({
       anchor: '#show-order-table',
       append: 'first',
       onMount: (container) => {
-        // Create and render the CalendarWidget
-        const calendarContainer = document.createElement('div');
-        const root = createRoot(calendarContainer);
-        root.render(<CalendarWidget />);
+        // Create and render the OrderManagement component
+        const managementContainer = document.createElement('div');
+        const root = createRoot(managementContainer);
+        root.render(<OrderManagement />);
         
-        // Prepend the calendar to the container's parent
-        container.parentElement?.prepend(calendarContainer);
+        // Prepend the management panel to the container's parent
+        container.parentElement?.prepend(managementContainer);
       },
     });
 
