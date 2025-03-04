@@ -16,10 +16,10 @@ import {
 } from "@mui/material";
 
 import { DeleteOutline, ContentCopy, AccessTime, Warning } from "@mui/icons-material";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import LoadboardMaxDepTimePicker from "./PatDateTimePicker";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -55,6 +55,10 @@ export function OrderManagement() {
   // Date time states
   const [startDateTime, setStartDateTime] = useState<dayjs.Dayjs | null>(null);
   const [endDateTime, setEndDateTime] = useState<dayjs.Dayjs | null>(null);
+  
+  // Calendar open states
+  const [startCalendarOpen, setStartCalendarOpen] = useState<boolean>(false);
+  const [endCalendarOpen, setEndCalendarOpen] = useState<boolean>(false);
   
   // Other form states - empty string means "don't change"
   const [minPayout, setMinPayout] = useState<string>("");
@@ -256,6 +260,32 @@ export function OrderManagement() {
     alert(`${selectedOrderIds.length} orders cloned`);
   };
 
+  // Handle date time picker changes
+  const handleStartDateTimeChange = (value: any, index: number, field: string) => {
+    if (value && dayjs(value).isValid()) {
+      setStartDateTime(dayjs(value));
+    } else {
+      setStartDateTime(null);
+    }
+  };
+
+  const handleEndDateTimeChange = (value: any, index: number, field: string) => {
+    if (value && dayjs(value).isValid()) {
+      setEndDateTime(dayjs(value));
+    } else {
+      setEndDateTime(null);
+    }
+  };
+
+  // Handle calendar open state changes
+  const handleStartCalendarOpenChange = (isOpen: boolean, index: number, field: string) => {
+    setStartCalendarOpen(isOpen);
+  };
+
+  const handleEndCalendarOpenChange = (isOpen: boolean, index: number, field: string) => {
+    setEndCalendarOpen(isOpen);
+  };
+
   // Get summary of changes
   const getChangesSummary = () => {
     const changes = [];
@@ -309,7 +339,7 @@ export function OrderManagement() {
 
   return (
     <Paper 
-      elevation={2} 
+      variant="outlined"
       sx={{ 
         p: 2, 
         mb: 2, 
@@ -317,8 +347,41 @@ export function OrderManagement() {
         borderRadius: 1 
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Order Management</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+      <FormControl sx={{width:200}} size="small">
+        <InputLabel id="action-select-label">Select action</InputLabel>
+        <Select
+          labelId="action-select-label"
+          value={activeAction}
+          onChange={handleActionChange}
+          label="Select action"
+        >
+          <MenuItem value="modify">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AccessTime sx={{ fontSize: 16, mr: 1 }} />
+              <span>Modify Orders</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="clone">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ContentCopy sx={{ fontSize: 16, mr: 1 }} />
+              <span>Clone Orders</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="delete-selected">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+              <span>Delete Selected</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="delete-all">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+              <span>Delete All</span>
+            </Box>
+          </MenuItem>
+        </Select>
+      </FormControl>
         <Box 
           sx={{ 
             px: 1, 
@@ -334,74 +397,32 @@ export function OrderManagement() {
         </Box>
       </Box>
       
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel id="action-select-label">Select action</InputLabel>
-        <Select
-          labelId="action-select-label"
-          value={activeAction}
-          onChange={handleActionChange}
-          label="Select action"
-        >
-          <MenuItem value="modify">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AccessTime sx={{ fontSize: 18, mr: 1 }} />
-              <span>Modify Orders</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="clone">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ContentCopy sx={{ fontSize: 18, mr: 1 }} />
-              <span>Clone Orders</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="delete-selected">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DeleteOutline sx={{ fontSize: 18, mr: 1 }} />
-              <span>Delete Selected</span>
-            </Box>
-          </MenuItem>
-          <MenuItem value="delete-all">
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DeleteOutline sx={{ fontSize: 18, mr: 1 }} />
-              <span>Delete All</span>
-            </Box>
-          </MenuItem>
-        </Select>
-      </FormControl>
+      <Divider sx={{ mt: 2 }} />
       
       {(activeAction === "modify" || activeAction === "clone") && (
-        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            {activeAction === "modify" ? "Modify Orders" : "Clone Orders"}
-          </Typography>
+        <Box sx={{ mt: 4 }}>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateTimePicker
-                    label="New Start Date/Time"
-                    value={startDateTime}
-                    onChange={setStartDateTime}
-                    slotProps={{
-                      textField: { size: 'small', fullWidth: true }
-                    }}
-                    format="MM/DD/YYYY HH:mm"
-                  />
-                </LocalizationProvider>
+                <LoadboardMaxDepTimePicker
+                  filter={{}}
+                  index={0}
+                  value={startDateTime ? startDateTime.toISOString() : null}
+                  isOpen={startCalendarOpen}
+                  handleCalendarChange={handleStartDateTimeChange}
+                  handleCalendarOpenChange={handleStartCalendarOpenChange}
+                />
               </Grid>
               <Grid item xs={6}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateTimePicker
-                    label="New End Date/Time"
-                    value={endDateTime}
-                    onChange={setEndDateTime}
-                    slotProps={{
-                      textField: { size: 'small', fullWidth: true }
-                    }}
-                    format="MM/DD/YYYY HH:mm"
-                  />
-                </LocalizationProvider>
+                <LoadboardMaxDepTimePicker
+                  filter={{}}
+                  index={1}
+                  value={endDateTime ? endDateTime.toISOString() : null}
+                  isOpen={endCalendarOpen}
+                  handleCalendarChange={handleEndDateTimeChange}
+                  handleCalendarOpenChange={handleEndCalendarOpenChange}
+                />
               </Grid>
             </Grid>
             
