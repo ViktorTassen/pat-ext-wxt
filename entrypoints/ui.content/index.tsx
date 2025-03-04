@@ -1,15 +1,49 @@
 import { createRoot } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import './style.css';
+
+// Create a theme instance
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#006d9e',
+      '50': '#e3f2fd',
+      '800': '#01579b',
+    },
+    info: {
+      main: '#0288d1',
+      '50': '#e1f5fe',
+      '200': '#81d4fa',
+      '700': '#0288d1',
+      '800': '#0277bd',
+    },
+    grey: {
+      '50': '#fafafa',
+    },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+});
 
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
 
   main(ctx) {
-
     // create UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
@@ -21,9 +55,12 @@ export default defineContentScript({
         const managementContainer = document.createElement('div');
         const root = createRoot(managementContainer);
         root.render(
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <OrderManagement />
-          </LocalizationProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <OrderManagement />
+            </LocalizationProvider>
+          </ThemeProvider>
         );
         
         // Prepend the management panel to the container's parent
@@ -41,7 +78,11 @@ export default defineContentScript({
           // Create and render the Checkbox
           const checkboxContainer = document.createElement('span');
           const root = createRoot(checkboxContainer);
-          root.render(<OrderCheckbox />);
+          root.render(
+            <ThemeProvider theme={theme}>
+              <OrderCheckbox />
+            </ThemeProvider>
+          );
     
           // Prepend the checkbox to the container's parent
           container.parentElement?.prepend(checkboxContainer);
@@ -74,6 +115,5 @@ export default defineContentScript({
     // Mount the UI
     observeOrderIdElements();
     ui.autoMount();
-
   },
 });

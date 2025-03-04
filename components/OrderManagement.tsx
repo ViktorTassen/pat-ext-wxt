@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
-import { Trash2, Copy, Clock, AlertTriangle } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { MuiDateTimePicker } from "@/components/ui/mui-date-time-picker";
+import { 
+  Button, 
+  TextField, 
+  Typography, 
+  Box, 
+  Paper, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  Divider, 
+  Grid, 
+  FormHelperText,
+  SelectChangeEvent
+} from "@mui/material";
+
+import { DeleteOutline, ContentCopy, AccessTime, Warning } from "@mui/icons-material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -40,8 +52,8 @@ export function OrderManagement() {
   const [activeAction, setActiveAction] = useState("");
   
   // Date time states
-  const [startDateTime, setStartDateTime] = useState<Date | undefined>(undefined);
-  const [endDateTime, setEndDateTime] = useState<Date | undefined>(undefined);
+  const [startDateTime, setStartDateTime] = useState<Date | null>(null);
+  const [endDateTime, setEndDateTime] = useState<Date | null>(null);
   
   // Other form states - empty string means "don't change"
   const [minPayout, setMinPayout] = useState<string>("");
@@ -95,16 +107,16 @@ export function OrderManagement() {
     // Reset form
     if (activeAction === "modify") {
       // For modify, start with empty values
-      setStartDateTime(undefined);
-      setEndDateTime(undefined);
+      setStartDateTime(null);
+      setEndDateTime(null);
     } else if (activeAction === "clone") {
       // For clone, reset to undefined (not prefilled)
-      setStartDateTime(undefined);
-      setEndDateTime(undefined);
+      setStartDateTime(null);
+      setEndDateTime(null);
     } else {
       // For other actions, reset all fields
-      setStartDateTime(undefined);
-      setEndDateTime(undefined);
+      setStartDateTime(null);
+      setEndDateTime(null);
     }
     
     // Always reset these fields
@@ -118,7 +130,7 @@ export function OrderManagement() {
 
   // Action handlers
   const handleDeleteAllOrders = async () => {
-    if (confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
       // Will implement API call later
       console.log("Deleting all orders");
       setAllOrders([]);
@@ -134,7 +146,7 @@ export function OrderManagement() {
       return;
     }
     
-    if (confirm(`Are you sure you want to delete ${selectedOrderIds.length} selected orders? This action cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ${selectedOrderIds.length} selected orders? This action cannot be undone.`)) {
       // Will implement API call later
       console.log("Deleting selected orders:", selectedOrderIds);
       
@@ -290,220 +302,283 @@ export function OrderManagement() {
     return changes;
   };
 
+  const handleActionChange = (event: SelectChangeEvent) => {
+    setActiveAction(event.target.value);
+  };
+
   return (
-    <div className="order-management bg-white rounded-lg shadow-md p-3 mb-4 max-w-lg">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-medium">Order Management</h3>
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-md">
+    <Paper 
+      elevation={2} 
+      sx={{ 
+        p: 2, 
+        mb: 2, 
+        maxWidth: 500, 
+        borderRadius: 1 
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Order Management</Typography>
+        <Box 
+          sx={{ 
+            px: 1, 
+            py: 0.5, 
+            bgcolor: 'primary.50', 
+            color: 'primary.800', 
+            borderRadius: 1, 
+            fontSize: '0.875rem', 
+            fontWeight: 500 
+          }}
+        >
           {selectedOrderIds.length} order{selectedOrderIds.length !== 1 ? 's' : ''} selected
-        </span>
-      </div>
+        </Box>
+      </Box>
       
-      <div className="mb-3">
-        <Select value={activeAction} onValueChange={setActiveAction}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select action" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="modify">
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-2" />
-                <span>Modify Orders</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="clone">
-              <div className="flex items-center">
-                <Copy className="h-4 w-4 mr-2" />
-                <span>Clone Orders</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="delete-selected">
-              <div className="flex items-center">
-                <Trash2 className="h-4 w-4 mr-2" />
-                <span>Delete Selected</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="delete-all">
-              <div className="flex items-center">
-                <Trash2 className="h-4 w-4 mr-2" />
-                <span>Delete All</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel id="action-select-label">Select action</InputLabel>
+        <Select
+          labelId="action-select-label"
+          value={activeAction}
+          onChange={handleActionChange}
+          label="Select action"
+        >
+          <MenuItem value="modify">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AccessTime sx={{ fontSize: 18, mr: 1 }} />
+              <span>Modify Orders</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="clone">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ContentCopy sx={{ fontSize: 18, mr: 1 }} />
+              <span>Clone Orders</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="delete-selected">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <DeleteOutline sx={{ fontSize: 18, mr: 1 }} />
+              <span>Delete Selected</span>
+            </Box>
+          </MenuItem>
+          <MenuItem value="delete-all">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <DeleteOutline sx={{ fontSize: 18, mr: 1 }} />
+              <span>Delete All</span>
+            </Box>
+          </MenuItem>
         </Select>
-      </div>
+      </FormControl>
       
       {(activeAction === "modify" || activeAction === "clone") && (
-        <div className="bg-gray-50 p-3 rounded-md">
-          <h4 className="text-sm font-medium mb-2">
+        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
             {activeAction === "modify" ? "Modify Orders" : "Clone Orders"}
-          </h4>
+          </Typography>
           
-          <div className="space-y-3">
-            <div className="flex flex-row gap-2">
-              <div className="flex flex-col w-full">
-                <Label htmlFor="start-date-time" className="text-xs mb-1">
-                  New Start Date/Time
-                </Label>
-                <MuiDateTimePicker
-                  value={startDateTime}
-                  onChange={setStartDateTime}
-                  label="Start Date/Time"
-                />
-              </div>
-              <div className="flex flex-col w-full">
-                <Label htmlFor="end-date-time" className="text-xs mb-1">
-                  New End Date/Time
-                </Label>
-                <MuiDateTimePicker
-                  value={endDateTime}
-                  onChange={setEndDateTime}
-                  label="End Date/Time"
-                />
-              </div>
-            </div>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DateTimePicker
+                    label="New Start Date/Time"
+                    value={startDateTime}
+                    onChange={setStartDateTime}
+                    slotProps={{
+                      textField: { size: 'small', fullWidth: true }
+                    }}
+                    format="MM/dd/yyyy HH:mm"
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DateTimePicker
+                    label="New End Date/Time"
+                    value={endDateTime}
+                    onChange={setEndDateTime}
+                    slotProps={{
+                      textField: { size: 'small', fullWidth: true }
+                    }}
+                    format="MM/dd/yyyy HH:mm"
+                  />
+                </LocalizationProvider>
+              </Grid>
+            </Grid>
             
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="min-payout" className="text-xs">Min Payout ($)</Label>
-                <Input 
-                  id="min-payout" 
-                  type="number" 
-                  value={minPayout} 
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField
+                  label="Min Payout ($)"
+                  type="number"
+                  value={minPayout}
                   onChange={(e) => setMinPayout(e.target.value)}
-                  className="h-8 text-sm no-number-arrows"
-                  placeholder="Keep current" 
+                  placeholder="Keep current"
+                  size="small"
+                  fullWidth
+                  InputProps={{
+                    inputProps: { 
+                      style: { height: '14px' } 
+                    }
+                  }}
                 />
-              </div>
-              <div>
-                <Label htmlFor="min-price-per-mile" className="text-xs">Min Price/Mile ($)</Label>
-                <Input 
-                  id="min-price-per-mile" 
-                  type="number" 
-                  step="0.1" 
-                  value={minPricePerMile} 
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Min Price/Mile ($)"
+                  type="number"
+                  inputProps={{ step: "0.1" }}
+                  value={minPricePerMile}
                   onChange={(e) => setMinPricePerMile(e.target.value)}
-                  className="h-8 text-sm no-number-arrows"
-                  placeholder="Keep current" 
+                  placeholder="Keep current"
+                  size="small"
+                  fullWidth
+                  InputProps={{
+                    inputProps: { 
+                      style: { height: '14px' } 
+                    }
+                  }}
                 />
-              </div>
-            </div>
+              </Grid>
+            </Grid>
             
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="stem-time" className="text-xs">Stem Time</Label>
-                <Select value={stemTime} onValueChange={setStemTime}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="Keep current" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Keep current</SelectItem>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="stem-time-label">Stem Time</InputLabel>
+                  <Select
+                    labelId="stem-time-label"
+                    value={stemTime}
+                    onChange={(e) => setStemTime(e.target.value)}
+                    label="Stem Time"
+                  >
+                    <MenuItem value="none">Keep current</MenuItem>
                     {STEM_TIME_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{formatStemTime(option)}</SelectItem>
+                      <MenuItem key={option} value={option}>{formatStemTime(option)}</MenuItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="max-stops" className="text-xs">Max Stops</Label>
-                <Input 
-                  id="max-stops" 
-                  type="number" 
-                  value={maxStops} 
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Max Stops"
+                  type="number"
+                  value={maxStops}
                   onChange={(e) => setMaxStops(e.target.value)}
-                  className="h-8 text-sm no-number-arrows"
-                  placeholder="Keep current" 
+                  placeholder="Keep current"
+                  size="small"
+                  fullWidth
+                  InputProps={{
+                    inputProps: { 
+                      style: { height: '14px' } 
+                    }
+                  }}
                 />
-              </div>
-            </div>
+              </Grid>
+            </Grid>
             
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="origin-radius" className="text-xs">Origin Radius (miles)</Label>
-                <Select value={originRadius} onValueChange={setOriginRadius}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="Keep current" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Keep current</SelectItem>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="origin-radius-label">Origin Radius (miles)</InputLabel>
+                  <Select
+                    labelId="origin-radius-label"
+                    value={originRadius}
+                    onChange={(e) => setOriginRadius(e.target.value)}
+                    label="Origin Radius (miles)"
+                  >
+                    <MenuItem value="none">Keep current</MenuItem>
                     {RADIUS_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                      <MenuItem key={option} value={option}>{option}</MenuItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="destination-radius" className="text-xs">Dest. Radius (miles)</Label>
-                <Select value={destinationRadius} onValueChange={setDestinationRadius}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="Keep current" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Keep current</SelectItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="destination-radius-label">Dest. Radius (miles)</InputLabel>
+                  <Select
+                    labelId="destination-radius-label"
+                    value={destinationRadius}
+                    onChange={(e) => setDestinationRadius(e.target.value)}
+                    label="Dest. Radius (miles)"
+                  >
+                    <MenuItem value="none">Keep current</MenuItem>
                     {RADIUS_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                      <MenuItem key={option} value={option}>{option}</MenuItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
             
             {/* Summary of changes */}
             {getChangesSummary().length > 0 && (
-              <div className="mt-3 bg-blue-50 p-2 rounded border border-blue-200">
-                <h4 className="text-xs font-medium text-blue-800 mb-1">
+              <Box sx={{ 
+                mt: 2, 
+                bgcolor: 'info.50', 
+                p: 1, 
+                borderRadius: 1, 
+                border: 1, 
+                borderColor: 'info.200' 
+              }}>
+                <Typography variant="caption" sx={{ color: 'info.800', fontWeight: 500, mb: 0.5, display: 'block' }}>
                   {activeAction === "modify" ? "Changes to apply:" : "Clone details:"}
-                </h4>
-                <ul className="text-xs text-blue-700 pl-5 list-disc">
+                </Typography>
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
                   {getChangesSummary().map((change, index) => (
-                    <li key={index}>{change}</li>
+                    <Box component="li" key={index} sx={{ color: 'info.700', fontSize: '0.75rem' }}>
+                      {change}
+                    </Box>
                   ))}
                   {activeAction === "clone" && (
-                    <li>Orders to clone: {selectedOrderIds.length}</li>
+                    <Box component="li" sx={{ color: 'info.700', fontSize: '0.75rem' }}>
+                      Orders to clone: {selectedOrderIds.length}
+                    </Box>
                   )}
-                </ul>
-              </div>
+                </Box>
+              </Box>
             )}
             
             <Button 
+              variant="contained"
               onClick={activeAction === "modify" ? handleModifyOrders : handleCloneOrders}
               disabled={selectedOrderIds.length === 0}
-              className="w-full h-8 text-sm mt-2"
+              sx={{ mt: 1, height: 32, fontSize: '0.875rem' }}
+              fullWidth
             >
               {activeAction === "modify" ? "Update" : "Clone"} {selectedOrderIds.length} Order{selectedOrderIds.length !== 1 ? 's' : ''}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
       
       {activeAction === "delete-selected" && (
-        <div className="bg-gray-50 p-3 rounded-md">
-          <div className="space-y-3">
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteSelectedOrders}
-              disabled={selectedOrderIds.length === 0}
-              className="w-full h-8 text-sm"
-            >
-              Delete {selectedOrderIds.length} Selected Order{selectedOrderIds.length !== 1 ? 's' : ''}
-            </Button>
-          </div>
-        </div>
+        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+          <Button 
+            variant="contained" 
+            color="error"
+            onClick={handleDeleteSelectedOrders}
+            disabled={selectedOrderIds.length === 0}
+            sx={{ height: 32, fontSize: '0.875rem' }}
+            fullWidth
+          >
+            Delete {selectedOrderIds.length} Selected Order{selectedOrderIds.length !== 1 ? 's' : ''}
+          </Button>
+        </Box>
       )}
       
       {activeAction === "delete-all" && (
-        <div className="bg-gray-50 p-3 rounded-md">
-          <div className="space-y-3">
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteAllOrders}
-              className="w-full h-8 text-sm"
-            >
-              Delete All Orders ({allOrders.length})
-            </Button>
-          </div>
-        </div>
+        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+          <Button 
+            variant="contained" 
+            color="error"
+            onClick={handleDeleteAllOrders}
+            sx={{ height: 32, fontSize: '0.875rem' }}
+            fullWidth
+          >
+            Delete All Orders ({allOrders.length})
+          </Button>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 }
