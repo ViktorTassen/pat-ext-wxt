@@ -46,13 +46,8 @@ const LoadboardSelect: React.FC<LoadboardSelectProps> = ({
   onChange,
   options,
   fullWidth = true,
+  size = "small",
 }) => {
-  // fix popper positioning MUI
-  const [currentSelectFilter, setCurrentSelectFilter] = useState<any>(null);
-  const refSelectFilter = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    setCurrentSelectFilter(refSelectFilter.current);
-  }, [refSelectFilter.current]);
 
   const MenuProps = {
     PaperProps: {
@@ -63,21 +58,19 @@ const LoadboardSelect: React.FC<LoadboardSelectProps> = ({
   };
 
   return (
-    <FormControl fullWidth={fullWidth} variant="filled">
+    <FormControl fullWidth={fullWidth} variant="filled" size={size}>
       <InputLabel shrink id={id}>{label}</InputLabel>
       <AmzSelect
         labelId={id}
         value={value}
         onChange={(event) => onChange(event as SelectChangeEvent<string>)}
         label={label}
-        ref={refSelectFilter}
-        MenuProps={{ container: currentSelectFilter, ...MenuProps }}
+        MenuProps={{ ...MenuProps }}
+        size={size}
         disableUnderline
+        fullWidth
         sx={{
-          '& .MuiSelect-select': {
-            paddingTop: '8px',
-            paddingBottom: '8px',
-          }
+          minWidth: '120px',
         }}
       >
         {options.map((option) => (

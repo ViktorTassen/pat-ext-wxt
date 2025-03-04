@@ -45,7 +45,7 @@ export function OrderManagement() {
   const [allOrders, setAllOrders] = useState<any[]>([]);
   
   // Action state
-  const [activeAction, setActiveAction] = useState("");
+  const [activeAction, setActiveAction] = useState("0");
   
   // Date time states
   const [startDateTime, setStartDateTime] = useState<dayjs.Dayjs | null>(null);
@@ -355,6 +355,8 @@ export function OrderManagement() {
   ];
 
   return (
+
+    
     <Paper 
       variant="outlined"
       sx={{ 
@@ -364,6 +366,7 @@ export function OrderManagement() {
         borderRadius: 1 
       }}
     >
+      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <Box sx={{ width: 200 }}>
           <LoadboardSelect
@@ -372,7 +375,7 @@ export function OrderManagement() {
             value={activeAction}
             onChange={handleActionChange}
             options={[
-              { value: "", label: "" },
+              { value: "0", label: "---" },
               ...actionOptions.map(option => ({
                 value: option.value,
                 label: typeof option.label === 'string' 
@@ -442,7 +445,7 @@ export function OrderManagement() {
               </Grid>
               <Grid item xs={6}>
                 <LoadboardTextField
-                  label="Min Price/Mile ($)"
+                  label="Min Price/mile"
                   value={minPricePerMile}
                   onChange={(e) => setMinPricePerMile(e.target.value)}
                   placeholder="Keep current"

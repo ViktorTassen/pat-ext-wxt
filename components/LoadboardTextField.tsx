@@ -20,11 +20,7 @@ interface LoadboardFilterProps {
 const AmzTextField = styled((props: TextFieldProps) => (
   <TextField
     variant="filled"
-    InputProps={{ 
-      disableUnderline: true, 
-      inputProps: { min: 0, inputMode: 'decimal' },
-      ...props.InputProps
-    } as Partial<OutlinedInputProps>}
+    InputProps={{ disableUnderline: true, inputProps: { min: 0, inputMode: 'decimal' } } as Partial<OutlinedInputProps>}
     {...props}
   />
 ))(({ theme }) => ({
@@ -80,7 +76,6 @@ const LoadboardTextField: React.FC<LoadboardFilterProps> = ({
   return (
     <AmzTextField
       size={size}
-      sx={{ width: fullWidth ? '100%' : 95 }}
       type="number"
       placeholder={placeholder}
       error={error}
@@ -90,6 +85,7 @@ const LoadboardTextField: React.FC<LoadboardFilterProps> = ({
       fullWidth={fullWidth}
       InputLabelProps={{
         shrink: true,
+        
         ...InputLabelProps
       }}
       InputProps={InputProps}

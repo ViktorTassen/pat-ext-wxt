@@ -68,6 +68,7 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
         actionBar: { actions: ['clear', 'accept'] },
         field: { shouldRespectLeadingZeros: true, clearable: true },
         textField: {
+          fullWidth: true,
           placeholder: '',
           variant: 'filled',
           InputLabelProps: { shrink: true },
