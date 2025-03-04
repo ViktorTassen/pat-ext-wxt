@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format, parse } from "date-fns";
 import { Trash2, Copy, Clock, AlertTriangle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DateTimePicker24h } from "@/components/ui/date-time-picker";
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -333,7 +333,7 @@ export function OrderManagement() {
                 <Label htmlFor="start-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "Start Date/Time" : "New Start Date/Time*"}
                 </Label>
-                <DateTimePicker 
+                <DateTimePicker24h 
               
                 
                
@@ -344,7 +344,7 @@ export function OrderManagement() {
                 <Label htmlFor="end-date-time" className="text-xs mb-1">
                   {activeAction === "modify" ? "End Date/Time" : "New End Date/Time*"}
                 </Label>
-                <DateTimePicker 
+                <DateTimePicker24h 
                
                 />
               </div>
