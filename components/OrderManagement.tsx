@@ -40,7 +40,7 @@ const formatStemTime = (minutes: string): string => {
 
 export function OrderManagement() {
   // State for selected order IDs
-  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   // State for all orders from storage
   const [allOrders, setAllOrders] = useState<any[]>([]);
   
@@ -80,27 +80,27 @@ export function OrderManagement() {
     loadOrders();
     
     // Listen for checkbox selection events
+    const handleOrderSelected = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { orderId, selected } = customEvent.detail;
+      
+      setSelectedOrderIds(prev => {
+        const newSet = new Set(prev);
+        if (selected) {
+          newSet.add(orderId);
+        } else {
+          newSet.delete(orderId);
+        }
+        return newSet;
+      });
+    };
+    
     window.addEventListener('orderSelected', handleOrderSelected);
     
     return () => {
       window.removeEventListener('orderSelected', handleOrderSelected);
     };
   }, []);
-
-  // Handle order selection from checkboxes
-  const handleOrderSelected = (event: Event) => {
-    const customEvent = event as CustomEvent;
-    const { orderId, selected } = customEvent.detail;
-    
-    setSelectedOrderIds(prev => {
-      if (selected && !prev.includes(orderId)) {
-        return [...prev, orderId];
-      } else if (!selected && prev.includes(orderId)) {
-        return prev.filter(id => id !== orderId);
-      }
-      return prev;
-    });
-  };
 
   // Reset form fields when changing action
   useEffect(() => {
@@ -121,25 +121,25 @@ export function OrderManagement() {
   const handleDeleteAllOrders = async () => {
     console.log("Deleting all orders");
     setAllOrders([]);
-    setSelectedOrderIds([]);
+    setSelectedOrderIds(new Set());
     await storage.setItem('local:orders', []);
   };
 
   const handleDeleteSelectedOrders = async () => {
-    if (selectedOrderIds.length === 0) {
+    if (selectedOrderIds.size === 0) {
       return;
     }
     
-    console.log("Deleting selected orders:", selectedOrderIds);
+    console.log("Deleting selected orders:", Array.from(selectedOrderIds));
     
-    const updatedOrders = allOrders.filter(order => !selectedOrderIds.includes(order.id));
+    const updatedOrders = allOrders.filter(order => !selectedOrderIds.has(order.id));
     setAllOrders(updatedOrders);
-    setSelectedOrderIds([]);
+    setSelectedOrderIds(new Set());
     await storage.setItem('local:orders', updatedOrders);
   };
 
   const handleModifyOrders = () => {
-    if (selectedOrderIds.length === 0) {
+    if (selectedOrderIds.size === 0) {
       return;
     }
     
@@ -186,7 +186,7 @@ export function OrderManagement() {
   };
 
   const handleCloneOrders = () => {
-    if (selectedOrderIds.length === 0) {
+    if (selectedOrderIds.size === 0) {
       return;
     }
     
@@ -399,7 +399,7 @@ export function OrderManagement() {
             fontWeight: 500 
           }}
         >
-          {selectedOrderIds.length} order{selectedOrderIds.length !== 1 ? 's' : ''} selected
+          {selectedOrderIds.size} order{selectedOrderIds.size !== 1 ? 's' : ''} selected
         </Box>
       </Box>
       
@@ -495,17 +495,17 @@ export function OrderManagement() {
             <ChangesSummary
               changes={getChangesForSummary()}
               mode={activeAction as 'modify' | 'clone'}
-              selectedCount={selectedOrderIds.length}
+              selectedCount={selectedOrderIds.size}
             />
             
             <Button 
               variant="contained"
               onClick={activeAction === "modify" ? handleModifyOrders : handleCloneOrders}
-              disabled={selectedOrderIds.length === 0}
+              disabled={selectedOrderIds.size === 0}
               sx={{ mt: 1, height: 32, fontSize: '0.875rem' }}
               fullWidth
             >
-              {activeAction === "modify" ? "Update" : "Clone"} {selectedOrderIds.length} Order{selectedOrderIds.length !== 1 ? 's' : ''}
+              {activeAction === "modify" ? "Update" : "Clone"} {selectedOrderIds.size} Order{selectedOrderIds.size !== 1 ? 's' : ''}
             </Button>
           </Box>
         </Box>
@@ -517,11 +517,11 @@ export function OrderManagement() {
             variant="contained" 
             color="error"
             onClick={handleDeleteSelectedOrders}
-            disabled={selectedOrderIds.length === 0}
+            disabled={selectedOrderIds.size === 0}
             sx={{ height: 32, fontSize: '0.875rem' }}
             fullWidth
           >
-            Delete {selectedOrderIds.length} Selected Order{selectedOrderIds.length !== 1 ? 's' : ''}
+            Delete {selectedOrderIds.size} Selected Order{selectedOrderIds.size !== 1 ? 's' : ''}
           </Button>
         </Box>
       )}

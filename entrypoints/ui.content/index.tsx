@@ -47,11 +47,9 @@ export default defineContentScript({
     // create UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
-      // It observes the anchor
       anchor: '#show-order-table',
       append: 'first',
       onMount: (container) => {
-        // Create and render the OrderManagement component
         const managementContainer = document.createElement('div');
         const root = createRoot(managementContainer);
         root.render(
@@ -63,28 +61,24 @@ export default defineContentScript({
           </ThemeProvider>
         );
         
-        // Prepend the management panel to the container's parent
         container.parentElement?.prepend(managementContainer);
       },
     });
 
     // Create the checkbox UI
-    function createCheckboxUi(anchor: HTMLElement) {
+    function createCheckboxUi(anchor: HTMLElement, orderId: string) {
       return createIntegratedUi(ctx, {
         position: 'inline',
         anchor,
-    
         onMount: (container) => {
-          // Create and render the Checkbox
           const checkboxContainer = document.createElement('span');
           const root = createRoot(checkboxContainer);
           root.render(
             <ThemeProvider theme={theme}>
-              <OrderCheckbox />
+              <OrderCheckbox orderId={orderId} />
             </ThemeProvider>
           );
     
-          // Prepend the checkbox to the container's parent
           container.parentElement?.prepend(checkboxContainer);
         },
       });
@@ -96,30 +90,26 @@ export default defineContentScript({
         for (const mutation of mutations) {
           if (!mutation.addedNodes.length) continue;
           
-          // const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
           const orderIdElements = document.querySelectorAll("label:has([role='checkbox'])");
 
           for (const element of orderIdElements) {
             const parent = element.parentElement;
-            if (!parent) continue;
-            // delete children of element
+            if (!parent || parent.getAttribute("data-checkbox-initialized")) continue;
+
+            // Remove the original checkbox
             if (parent.firstChild) {
               parent.removeChild(parent.firstChild);
-            };
+            }
 
+            // Find the order ID element and get its text
             const orderIdElement = parent.parentElement?.querySelector('.order-id');
             const orderIdText = orderIdElement?.textContent?.trim();
-            console.log(orderIdText);
             
-            parent.setAttribute("data-checkbox-initialized", "true");
-            const checkboxUi = createCheckboxUi(parent);
-            checkboxUi.mount();
-
-
-            // if (element.parentElement) {
-            //   const checkboxUi = createCheckboxUi(element.parentElement.parentElement);
-            //   checkboxUi.mount();
-            // }
+            if (orderIdText) {
+              parent.setAttribute("data-checkbox-initialized", "true");
+              const checkboxUi = createCheckboxUi(parent, orderIdText);
+              checkboxUi.mount();
+            }
           }
         }
       });
@@ -130,7 +120,6 @@ export default defineContentScript({
       });
     }
     
-    // Mount the UI
     observeOrderIdElements();
     ui.autoMount();
   },

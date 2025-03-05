@@ -1,28 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Checkbox, Box } from "@mui/material";
 
-export function OrderCheckbox() {
+interface OrderCheckboxProps {
+  orderId: string;
+}
+
+export function OrderCheckbox({ orderId }: OrderCheckboxProps) {
   const [checked, setChecked] = useState(false);
   
   const handleCheckedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = event.target.checked;
     setChecked(isChecked);
     
-    // Get the parent element (which should contain the order ID)
-    const parentElement = document.getElementById('order-checkbox-container')?.parentElement;
-    const orderId = parentElement?.querySelector('.order-id')?.textContent?.trim();
-    
-    if (orderId) {
-      console.log(`Order ${orderId} ${isChecked ? 'selected' : 'unselected'}`);
-      
-      // Dispatch a custom event to notify the OrderManagement component
-      window.dispatchEvent(new CustomEvent('orderSelected', {
-        detail: {
-          orderId,
-          selected: isChecked
-        }
-      }));
-    }
+    // Dispatch a custom event to notify the OrderManagement component
+    window.dispatchEvent(new CustomEvent('orderSelected', {
+      detail: {
+        orderId,
+        selected: isChecked
+      }
+    }));
   };
 
   return (
