@@ -15,6 +15,9 @@ import LoadboardDateTimePicker from "./LoadboardDateTimePicker";
 import LoadboardTextField from "./LoadboardTextField";
 import LoadboardSelect from "./LoadboardSelect";
 import ChangesSummary from "./ChangesSummary";
+import { DeleteProgress } from "./DeleteProgress";
+import { deleteOrders } from "../utils/orderService";
+
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -43,6 +46,10 @@ export function OrderManagement() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   // State for all orders from storage
   const [allOrders, setAllOrders] = useState<any[]>([]);
+  
+  // Delete progress state
+  const [deleteProgress, setDeleteProgress] = useState<{ current: number; total: number } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   
   // Action state
   const [activeAction, setActiveAction] = useState("0");
@@ -94,11 +101,19 @@ export function OrderManagement() {
         return newSet;
       });
     };
+
+    // Listen for delete progress events
+    const handleDeleteProgress = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setDeleteProgress(customEvent.detail);
+    };
     
     window.addEventListener('orderSelected', handleOrderSelected);
+    window.addEventListener('deleteProgress', handleDeleteProgress);
     
     return () => {
       window.removeEventListener('orderSelected', handleOrderSelected);
+      window.removeEventListener('deleteProgress', handleDeleteProgress);
     };
   }, []);
 
@@ -107,6 +122,8 @@ export function OrderManagement() {
     // Reset form
     setStartDateTime(null);
     setEndDateTime(null);
+    setDeleteProgress(null);
+    setDeleteError(null);
     
     // Always reset these fields
     setMinPayout("");
@@ -119,10 +136,22 @@ export function OrderManagement() {
 
   // Action handlers
   const handleDeleteAllOrders = async () => {
-    console.log("Deleting all orders");
-    setAllOrders([]);
-    setSelectedOrderIds(new Set());
-    await storage.setItem('local:orders', []);
+    setDeleteError(null);
+    const ordersToDelete = allOrders.map(order => ({
+      id: order.id,
+      version: order.version
+    }));
+    
+    try {
+      await deleteOrders(ordersToDelete);
+      setAllOrders([]);
+      setSelectedOrderIds(new Set());
+      await storage.setItem('local:orders', []);
+    } catch (error) {
+      setDeleteError('Failed to delete some orders. Please try again.');
+    } finally {
+      setDeleteProgress(null);
+    }
   };
 
   const handleDeleteSelectedOrders = async () => {
@@ -130,12 +159,26 @@ export function OrderManagement() {
       return;
     }
     
-    console.log("Deleting selected orders:", Array.from(selectedOrderIds));
+    setDeleteError(null);
+    const ordersToDelete = allOrders
+      .filter(order => selectedOrderIds.has(order.alias))
+      .map(order => ({
+        id: order.id,
+        version: order.version
+      }));
     
-    const updatedOrders = allOrders.filter(order => !selectedOrderIds.has(order.id));
-    setAllOrders(updatedOrders);
-    setSelectedOrderIds(new Set());
-    await storage.setItem('local:orders', updatedOrders);
+    try {
+      console.log("Deleting orders test:", ordersToDelete);
+      await deleteOrders(ordersToDelete);
+      const updatedOrders = allOrders.filter(order => !selectedOrderIds.has(order.alias));
+      setAllOrders(updatedOrders);
+      setSelectedOrderIds(new Set());
+      await storage.setItem('local:orders', updatedOrders);
+    } catch (error) {
+      setDeleteError('Failed to delete some orders. Please try again.');
+    } finally {
+      setDeleteProgress(null);
+    }
   };
 
   const handleModifyOrders = () => {
@@ -523,6 +566,21 @@ export function OrderManagement() {
           >
             Delete {selectedOrderIds.size} Selected Order{selectedOrderIds.size !== 1 ? 's' : ''}
           </Button>
+          {deleteProgress && (
+            <DeleteProgress 
+              current={deleteProgress.current} 
+              total={deleteProgress.total} 
+            />
+          )}
+          {deleteError && (
+            <Typography 
+              color="error" 
+              variant="caption" 
+              sx={{ display: 'block', mt: 1 }}
+            >
+              {deleteError}
+            </Typography>
+          )}
         </Box>
       )}
       
@@ -537,6 +595,21 @@ export function OrderManagement() {
           >
             Delete All Orders ({allOrders.length})
           </Button>
+          {deleteProgress && (
+            <DeleteProgress 
+              current={deleteProgress.current} 
+              total={deleteProgress.total} 
+            />
+          )}
+          {deleteError && (
+            <Typography 
+              color="error" 
+              variant="caption" 
+              sx={{ display: 'block', mt: 1 }}
+            >
+              {deleteError}
+            </Typography>
+          )}
         </Box>
       )}
     </Paper>
