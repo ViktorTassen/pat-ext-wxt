@@ -1,61 +1,102 @@
+import type { Order, OrderChanges } from './types';
 
-export async function deleteOrder(orderId: string, version: number) {
-    const token = document.querySelector('[name=x-csrf-token]')?.getAttribute('content') || '';
-    const domain = window.location.hostname;
+class OrderService {
+  private readonly domain: string;
+  private readonly token: string;
 
-    console.log('Deleting order', orderId, version, token, domain);
+  constructor() {
+    this.domain = window.location.hostname;
+    this.token = document.querySelector('[name=x-csrf-token]')?.getAttribute('content') || '';
+  }
 
-    
-    const body = {
-      cancellationReason: "FOUND_OTHER_WORK",
-      cancellationComment: ""
-    };
-  
-    const response = await fetch(`https://${domain}/api/loadboard/orders/cancel/${orderId}/${version}`, {
-      method: 'POST',
+  private async makeRequest(endpoint: string, method: string, body: any) {
+    const response = await fetch(`https://${this.domain}${endpoint}`, {
+      method,
       headers: {
         'accept': '*/*',
-        'accept-language': 'en-US,en;q=0.9',
         'content-type': 'application/json',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        'x-csrf-token': token
+        'x-csrf-token': this.token
       },
-      referrer: `https://${domain}/loadboard/orders?state=active`,
+      referrer: `https://${this.domain}/loadboard/orders?state=active`,
       referrerPolicy: 'strict-origin-when-cross-origin',
       body: JSON.stringify(body),
       mode: 'cors',
       credentials: 'include'
     });
-  
+
+    // For delete operations, we consider 2xx status codes as success
+    if (endpoint.includes('/cancel/') && response.ok) {
+      return true;
+    }
+
+    // For other operations, we expect JSON response
     if (!response.ok) {
-      throw new Error(`Failed to delete order ${orderId}`);
+      throw new Error(`Request failed: ${response.statusText}`);
     }
+
+    return response.json();
   }
-  
-  export async function deleteOrders(orders: Array<{ id: string; version: number }>) {
-    for (let i = 0; i < orders.length; i++) {
-      const order = orders[i];
-      
-      try {
-        await deleteOrder(order.id, order.version);
-        
-        // Dispatch progress event
-        window.dispatchEvent(new CustomEvent('deleteProgress', {
-          detail: {
-            current: i + 1,
-            total: orders.length
-          }
-        }));
-        
-        // Add delay between requests
-        if (i < orders.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 600));
-        }
-      } catch (error) {
-        console.error(`Failed to delete order ${order.id}:`, error);
-        throw error;
+
+  async deleteOrder(orderId: string, version: number) {
+    return this.makeRequest(
+      `/api/loadboard/orders/cancel/${orderId}/${version}`,
+      'POST',
+      {
+        cancellationReason: "FOUND_OTHER_WORK",
+        cancellationComment: ""
       }
-    }
+    );
   }
+
+  async modifyOrder(order: Order, changes: OrderChanges) {
+    const modifiedOrder = this.applyChanges(order, changes);
+    return this.makeRequest('/api/loadboard/orders/upsert', 'POST', modifiedOrder);
+  }
+
+  async cloneOrder(order: Order, changes: OrderChanges) {
+    const clonedOrder = this.applyChanges(order, changes);
+    // Remove keys not needed for cloning
+    const { id, status, version, alias, matchType, ...cleanOrder } = clonedOrder;
+    return this.makeRequest('/api/loadboard/orders/upsert', 'POST', cleanOrder);
+  }
+
+  private applyChanges(order: Order, changes: OrderChanges): Order {
+    const updatedOrder = { ...order };
+
+    if (changes.startDateTime) {
+      updatedOrder.startTime = new Date(changes.startDateTime).toISOString();
+    }
+
+    if (changes.endDateTime) {
+      updatedOrder.endTime = new Date(changes.endDateTime).toISOString();
+    }
+
+    if (changes.minPayout) {
+      updatedOrder.totalCost.value = parseFloat(changes.minPayout);
+    }
+
+    if (changes.minPricePerMile) {
+      updatedOrder.costPerDistance.value = parseFloat(changes.minPricePerMile);
+    }
+
+    if (changes.stemTime) {
+      updatedOrder.minPickUpBufferInMinutes = parseInt(changes.stemTime, 10);
+    }
+
+    if (changes.maxStops) {
+      updatedOrder.maxNumberOfStops = parseInt(changes.maxStops, 10);
+    }
+
+    if (changes.originRadius) {
+      updatedOrder.originCityRadius.value = parseInt(changes.originRadius, 10);
+    }
+
+    if (changes.destinationRadius) {
+      updatedOrder.destinationCityRadius.value = parseInt(changes.destinationRadius, 10);
+    }
+
+    return updatedOrder;
+  }
+}
+
+export const orderService = new OrderService();

@@ -26,9 +26,6 @@ const theme = createTheme({
       '50': '#fafafa',
     },
   },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -89,28 +86,36 @@ export default defineContentScript({
       const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (!mutation.addedNodes.length) continue;
-          
-          const orderIdElements = document.querySelectorAll("label:has([role='checkbox'])");
 
+          const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
           for (const element of orderIdElements) {
-            const parent = element.parentElement;
-            if (!parent || parent.getAttribute("data-checkbox-initialized")) continue;
-
-            // Remove the original checkbox
-            if (parent.firstChild) {
-              parent.removeChild(parent.firstChild);
-            }
-
-            // Find the order ID element and get its text
-            const orderIdElement = parent.parentElement?.querySelector('.order-id');
-            const orderIdText = orderIdElement?.textContent?.trim();
-            
-            if (orderIdText) {
-              parent.setAttribute("data-checkbox-initialized", "true");
-              const checkboxUi = createCheckboxUi(parent, orderIdText);
-              checkboxUi.mount();
-            }
+            element.setAttribute("data-checkbox-initialized", "true");
+            const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
+            checkboxUi.mount();
           }
+          
+          // const orderIdElements = document.querySelectorAll("label:has([role='checkbox'])");
+          // for (const element of orderIdElements) {
+          //   const parent = element.parentElement;
+          //   if (!parent || parent.getAttribute("data-checkbox-initialized")) continue;
+
+          //   // Remove the original checkbox
+          //   if (parent.firstChild) {
+          //     parent.removeChild(parent.firstChild);
+          //   }
+
+          //   // Find the order ID element and get its text
+          //   const orderIdElement = parent.parentElement?.querySelector('.order-id');
+          //   const orderIdText = orderIdElement?.textContent?.trim();
+            
+          //   if (orderIdText) {
+          //     parent.setAttribute("data-checkbox-initialized", "true");
+          //     const checkboxUi = createCheckboxUi(parent, orderIdText);
+          //     checkboxUi.mount();
+          //   }
+          // };
+
+
         }
       });
     

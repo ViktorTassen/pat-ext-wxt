@@ -2,13 +2,20 @@ import React from 'react';
 import { Box, LinearProgress, Typography } from '@mui/material';
 
 interface DeleteProgressProps {
-  current: number;
+  completed: number;
+  failed: number;
   total: number;
+  isComplete?: boolean;
 }
 
-export const DeleteProgress: React.FC<DeleteProgressProps> = ({ current, total }) => {
-  const progress = (current / total) * 100;
-
+export const DeleteProgress: React.FC<DeleteProgressProps> = ({ 
+  completed, 
+  failed, 
+  total,
+  isComplete = false
+}) => {
+  const progress = ((completed + failed) / total) * 100;
+  
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -32,7 +39,14 @@ export const DeleteProgress: React.FC<DeleteProgressProps> = ({ current, total }
         </Box>
       </Box>
       <Typography variant="caption" color="text.secondary">
-        Deleting orders: {current} of {total}
+        {isComplete ? (
+          <>
+            Completed: {completed} successful, {failed} failed
+            {completed > 0 && <span> - Refreshing page...</span>}
+          </>
+        ) : (
+          `Processing: ${completed + failed} of ${total}`
+        )}
       </Typography>
     </Box>
   );

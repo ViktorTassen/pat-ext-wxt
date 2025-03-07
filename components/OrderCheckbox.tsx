@@ -23,15 +23,13 @@ export function OrderCheckbox({ orderId }: OrderCheckboxProps) {
 
   return (
     <Box 
-      id="order-checkbox-container" 
+      className="order-checkbox-container" 
       sx={{ 
         display: 'flex', 
-        float: 'left', 
-        mr: 2 
       }}
     >
       <Checkbox 
-        id="order-checkbox" 
+        className="order-checkbox" 
         checked={checked} 
         onChange={handleCheckedChange} 
       />

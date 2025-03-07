@@ -16,8 +16,6 @@ import LoadboardTextField from "./LoadboardTextField";
 import LoadboardSelect from "./LoadboardSelect";
 import ChangesSummary from "./ChangesSummary";
 import { DeleteProgress } from "./DeleteProgress";
-import { deleteOrders } from "../utils/orderService";
-
 
 // Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
@@ -47,9 +45,20 @@ export function OrderManagement() {
   // State for all orders from storage
   const [allOrders, setAllOrders] = useState<any[]>([]);
   
-  // Delete progress state
-  const [deleteProgress, setDeleteProgress] = useState<{ current: number; total: number } | null>(null);
+  // Progress states
+  const [deleteProgress, setDeleteProgress] = useState<{
+    completed: number;
+    failed: number;
+    total: number;
+    isComplete: boolean;
+  } | null>(null);
+  const [modifyProgress, setModifyProgress] = useState<typeof deleteProgress>(null);
+  const [cloneProgress, setCloneProgress] = useState<typeof deleteProgress>(null);
+  
+  // Error states
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [modifyError, setModifyError] = useState<string | null>(null);
+  const [cloneError, setCloneError] = useState<string | null>(null);
   
   // Action state
   const [activeAction, setActiveAction] = useState("0");
@@ -102,18 +111,90 @@ export function OrderManagement() {
       });
     };
 
-    // Listen for delete progress events
+    // Listen for progress events
     const handleDeleteProgress = (event: Event) => {
       const customEvent = event as CustomEvent;
       setDeleteProgress(customEvent.detail);
     };
+
+    const handleModifyProgress = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setModifyProgress(customEvent.detail);
+    };
+
+    const handleCloneProgress = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setCloneProgress(customEvent.detail);
+    };
+
+    // Listen for success/error events
+    const handleDeleteSuccess = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setDeleteProgress({
+        ...customEvent.detail,
+        isComplete: true
+      });
+      setDeleteError(null);
+    };
+
+    const handleDeleteError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setDeleteError(customEvent.detail.error);
+      setDeleteProgress(null);
+    };
+
+    const handleModifySuccess = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setModifyProgress({
+        ...customEvent.detail,
+        isComplete: true
+      });
+      setModifyError(null);
+    };
+
+    const handleModifyError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setModifyError(customEvent.detail.error);
+      setModifyProgress(null);
+    };
+
+    const handleCloneSuccess = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setCloneProgress({
+        ...customEvent.detail,
+        isComplete: true
+      });
+      setCloneError(null);
+    };
+
+    const handleCloneError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setCloneError(customEvent.detail.error);
+      setCloneProgress(null);
+    };
     
     window.addEventListener('orderSelected', handleOrderSelected);
     window.addEventListener('deleteProgress', handleDeleteProgress);
+    window.addEventListener('modifyProgress', handleModifyProgress);
+    window.addEventListener('cloneProgress', handleCloneProgress);
+    window.addEventListener('deleteOrdersSuccess', handleDeleteSuccess);
+    window.addEventListener('deleteOrdersError', handleDeleteError);
+    window.addEventListener('modifyOrdersSuccess', handleModifySuccess);
+    window.addEventListener('modifyOrdersError', handleModifyError);
+    window.addEventListener('cloneOrdersSuccess', handleCloneSuccess);
+    window.addEventListener('cloneOrdersError', handleCloneError);
     
     return () => {
       window.removeEventListener('orderSelected', handleOrderSelected);
       window.removeEventListener('deleteProgress', handleDeleteProgress);
+      window.removeEventListener('modifyProgress', handleModifyProgress);
+      window.removeEventListener('cloneProgress', handleCloneProgress);
+      window.removeEventListener('deleteOrdersSuccess', handleDeleteSuccess);
+      window.removeEventListener('deleteOrdersError', handleDeleteError);
+      window.removeEventListener('modifyOrdersSuccess', handleModifySuccess);
+      window.removeEventListener('modifyOrdersError', handleModifyError);
+      window.removeEventListener('cloneOrdersSuccess', handleCloneSuccess);
+      window.removeEventListener('cloneOrdersError', handleCloneError);
     };
   }, []);
 
@@ -123,7 +204,11 @@ export function OrderManagement() {
     setStartDateTime(null);
     setEndDateTime(null);
     setDeleteProgress(null);
+    setModifyProgress(null);
+    setCloneProgress(null);
     setDeleteError(null);
+    setModifyError(null);
+    setCloneError(null);
     
     // Always reset these fields
     setMinPayout("");
@@ -142,16 +227,9 @@ export function OrderManagement() {
       version: order.version
     }));
     
-    try {
-      await deleteOrders(ordersToDelete);
-      setAllOrders([]);
-      setSelectedOrderIds(new Set());
-      await storage.setItem('local:orders', []);
-    } catch (error) {
-      setDeleteError('Failed to delete some orders. Please try again.');
-    } finally {
-      setDeleteProgress(null);
-    }
+    window.dispatchEvent(new CustomEvent('deleteOrdersRequest', {
+      detail: { orders: ordersToDelete }
+    }));
   };
 
   const handleDeleteSelectedOrders = async () => {
@@ -167,18 +245,9 @@ export function OrderManagement() {
         version: order.version
       }));
     
-    try {
-      console.log("Deleting orders test:", ordersToDelete);
-      await deleteOrders(ordersToDelete);
-      const updatedOrders = allOrders.filter(order => !selectedOrderIds.has(order.alias));
-      setAllOrders(updatedOrders);
-      setSelectedOrderIds(new Set());
-      await storage.setItem('local:orders', updatedOrders);
-    } catch (error) {
-      setDeleteError('Failed to delete some orders. Please try again.');
-    } finally {
-      setDeleteProgress(null);
-    }
+    window.dispatchEvent(new CustomEvent('deleteOrdersRequest', {
+      detail: { orders: ordersToDelete }
+    }));
   };
 
   const handleModifyOrders = () => {
@@ -224,8 +293,15 @@ export function OrderManagement() {
     if (Object.keys(changes).length === 0) {
       return;
     }
+
+    const ordersToModify = allOrders.filter(order => selectedOrderIds.has(order.alias));
     
-    console.log("Modifying orders with changes:", changes);
+    window.dispatchEvent(new CustomEvent('modifyOrdersRequest', {
+      detail: { 
+        orders: ordersToModify,
+        changes
+      }
+    }));
   };
 
   const handleCloneOrders = () => {
@@ -234,41 +310,48 @@ export function OrderManagement() {
     }
     
     // Build clone configuration - all fields are optional
-    const cloneConfig: Record<string, any> = {};
+    const changes: Record<string, any> = {};
     
     if (startDateTime) {
-      cloneConfig.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
+      changes.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (endDateTime) {
-      cloneConfig.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
+      changes.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
     }
     
     if (minPayout) {
-      cloneConfig.minPayout = minPayout;
+      changes.minPayout = minPayout;
     }
     
     if (minPricePerMile) {
-      cloneConfig.minPricePerMile = minPricePerMile;
+      changes.minPricePerMile = minPricePerMile;
     }
     
     if (stemTime && stemTime !== "none") {
-      cloneConfig.stemTime = stemTime;
+      changes.stemTime = stemTime;
     }
     
     if (originRadius && originRadius !== "none") {
-      cloneConfig.originRadius = originRadius;
+      changes.originRadius = originRadius;
     }
     
     if (destinationRadius && destinationRadius !== "none") {
-      cloneConfig.destinationRadius = destinationRadius;
+      changes.destinationRadius = destinationRadius;
     }
     
     if (maxStops) {
-      cloneConfig.maxStops = maxStops;
+      changes.maxStops = maxStops;
     }
+
+    const ordersToClone = allOrders.filter(order => selectedOrderIds.has(order.alias));
     
-    console.log("Cloning orders with config:", cloneConfig);
+    window.dispatchEvent(new CustomEvent('cloneOrdersRequest', {
+      detail: { 
+        orders: ordersToClone,
+        changes
+      }
+    }));
   };
 
   // Handle date time picker changes
@@ -541,6 +624,44 @@ export function OrderManagement() {
               selectedCount={selectedOrderIds.size}
             />
             
+            {activeAction === "modify" && modifyProgress && (
+              <DeleteProgress 
+                completed={modifyProgress.completed}
+                failed={modifyProgress.failed}
+                total={modifyProgress.total}
+                isComplete={modifyProgress.isComplete}
+              />
+            )}
+            
+            {activeAction === "clone" && cloneProgress && (
+              <DeleteProgress 
+                completed={cloneProgress.completed}
+                failed={cloneProgress.failed}
+                total={cloneProgress.total}
+                isComplete={cloneProgress.isComplete}
+              />
+            )}
+            
+            {activeAction === "modify" && modifyError && (
+              <Typography 
+                color="error" 
+                variant="caption" 
+                sx={{ display: 'block', mt: 1 }}
+              >
+                {modifyError}
+              </Typography>
+            )}
+            
+            {activeAction === "clone" && cloneError && (
+              <Typography 
+                color="error" 
+                variant="caption" 
+                sx={{ display: 'block', mt: 1 }}
+              >
+                {cloneError}
+              </Typography>
+            )}
+            
             <Button 
               variant="contained"
               onClick={activeAction === "modify" ? handleModifyOrders : handleCloneOrders}
@@ -568,8 +689,10 @@ export function OrderManagement() {
           </Button>
           {deleteProgress && (
             <DeleteProgress 
-              current={deleteProgress.current} 
-              total={deleteProgress.total} 
+              completed={deleteProgress.completed}
+              failed={deleteProgress.failed}
+              total={deleteProgress.total}
+              isComplete={deleteProgress.isComplete}
             />
           )}
           {deleteError && (
@@ -597,8 +720,10 @@ export function OrderManagement() {
           </Button>
           {deleteProgress && (
             <DeleteProgress 
-              current={deleteProgress.current} 
-              total={deleteProgress.total} 
+              completed={deleteProgress.completed}
+              failed={deleteProgress.failed}
+              total={deleteProgress.total}
+              isComplete={deleteProgress.isComplete}
             />
           )}
           {deleteError && (
