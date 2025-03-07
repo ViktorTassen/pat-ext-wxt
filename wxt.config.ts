@@ -11,7 +11,7 @@ export default defineConfig({
     permissions: ['storage'],
     web_accessible_resources: [
       {
-        resources: ["intercept.js"],
+        resources: ["fetch-main-world.js", "actions-main-world.js"],
         matches: ["*://*/*"],
       }
     ]

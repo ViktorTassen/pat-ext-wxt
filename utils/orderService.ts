@@ -1,5 +1,4 @@
 
-console.log('Order service loaded');
 export async function deleteOrder(orderId: string, version: number) {
     const token = document.querySelector('[name=x-csrf-token]')?.getAttribute('content') || '';
     const domain = window.location.hostname;

@@ -3,7 +3,7 @@ export default defineContentScript({
   runAt: "document_start",
   async main() {
     console.log('Injecting script...');
-    await injectScript('/intercept.js', {
+    await injectScript('/fetch-main-world.js', {
       keepInDom: true,
     });
     console.log('Done!');
