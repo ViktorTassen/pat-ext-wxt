@@ -3,39 +3,10 @@ import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { theme } from '../../utils/theme';
 import './style.css';
-
-// Create a theme instance
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#006d9e',
-      '50': '#e3f2fd',
-      '800': '#01579b',
-    },
-    info: {
-      main: '#0288d1',
-      '50': '#e1f5fe',
-      '200': '#81d4fa',
-      '700': '#0288d1',
-      '800': '#0277bd',
-    },
-    grey: {
-      '50': '#fafafa',
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-        },
-      },
-    },
-  },
-});
 
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
@@ -93,7 +64,6 @@ export default defineContentScript({
             const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
             checkboxUi.mount();
           }
-        
         }
       });
     
