@@ -68,7 +68,7 @@ export default defineContentScript({
                 for (const mutation of mutations) {
                     if (!mutation.addedNodes.length) continue;
 
-                    const loadCardElements = document.querySelectorAll(".load-card");
+                    const loadCardElements = document.querySelectorAll(".load-card:not([data-loadcard-initialized])");
                     for (const element of loadCardElements) {
                         element.setAttribute("data-loadcard-initialized", "true");
                         const loadCardUi = createLoadCardUi(element as HTMLElement);
