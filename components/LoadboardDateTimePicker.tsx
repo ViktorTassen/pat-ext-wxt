@@ -54,6 +54,7 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
 
   return (
     <AmzDateTimePicker
+
       onChange={(newValue) => handleChange(newValue)}
       disablePast
       open={isOpen}
@@ -70,7 +71,7 @@ const LoadboardDateTimePicker: React.FC<LoadboardDateTimePickerProps> = ({
           fullWidth: true,
           variant: 'filled',
           InputLabelProps: { shrink: true },
-          placeholder: '',
+          placeholder: 'Keep current',
           InputProps: {
             value: value ? dayjs(new Date(value)).format('MM/DD HH:mm') : '',
             disableUnderline: true,

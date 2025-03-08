@@ -395,12 +395,15 @@ export function OrderManagement() {
 
   const handleDriverChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
-    if (typeof value === 'string' && value === 'remove') {
+    
+    // Handle "remove" selection
+    if (Array.isArray(value) && value.includes('remove')) {
       setRemoveDrivers(true);
       setSelectedDriverIds([]);
       return;
     }
     
+    // Handle driver selection
     setRemoveDrivers(false);
     const selectedValues = typeof value === 'string' ? value.split(',') : value;
     setSelectedDriverIds(selectedValues.slice(0, 2));
@@ -638,7 +641,7 @@ export function OrderManagement() {
             </Grid>
 
             <FormControl fullWidth variant="filled">
-              <InputLabel id="driver-select-label">Select Drivers (max 2)</InputLabel>
+              <InputLabel shrink id="driver-select-label">Select Drivers (max 2)</InputLabel>
               <Select
                 labelId="driver-select-label"
                 multiple
@@ -687,7 +690,10 @@ export function OrderManagement() {
                 <MenuItem value="none" disabled>
                   Keep current
                 </MenuItem>
-                <MenuItem value="remove">
+                <MenuItem 
+                  value="remove"
+                  disabled={selectedDriverIds.length > 0}
+                >
                   Remove all drivers
                 </MenuItem>
                 <Divider />
@@ -695,7 +701,7 @@ export function OrderManagement() {
                   <MenuItem 
                     key={driver.latestTransientDriverId} 
                     value={driver.latestTransientDriverId}
-                    disabled={selectedDriverIds.length >= 2 && !selectedDriverIds.includes(driver.latestTransientDriverId)}
+                    disabled={removeDrivers || (selectedDriverIds.length >= 2 && !selectedDriverIds.includes(driver.latestTransientDriverId))}
                   >
                     {driver.firstName} {driver.lastName} ({driver.emailId})
                   </MenuItem>
