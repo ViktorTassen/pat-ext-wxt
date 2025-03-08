@@ -37,31 +37,9 @@ const theme = createTheme({
 });
 
 export default defineContentScript({
-    matches: ['*://relay.amazon.com/*'],
+    matches: ['*://relay.amazon.com/loadboard*'],
 
     main(ctx) {
-        // create UI
-
-        // const ui = createIntegratedUi(ctx, {
-        //     position: 'inline',
-        //     anchor: '#show-order-table',
-        //     append: 'first',
-        //     onMount: (container) => {
-        //         const managementContainer = document.createElement('div');
-        //         const root = createRoot(managementContainer);
-        //         root.render(
-        //             <ThemeProvider theme={theme}>
-        //                 <CssBaseline />
-        //                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-        //                     {/* <OrderManagement /> */}
-        //                 </LocalizationProvider>
-        //             </ThemeProvider>
-        //         );
-
-        //         container.parentElement?.prepend(managementContainer);
-        //     },
-        // });
-
         // Create the checkbox UI
         function createLoadCardUi(anchor: HTMLElement) {
             return createIntegratedUi(ctx, {
@@ -84,7 +62,7 @@ export default defineContentScript({
             });
         }
 
-        // Observe the order ID elements and create the checkboxes
+        // Observe the order ID elements and create the card UI
         function observeLoadCardElements() {
             const observer = new MutationObserver((mutations) => {
                 for (const mutation of mutations) {
