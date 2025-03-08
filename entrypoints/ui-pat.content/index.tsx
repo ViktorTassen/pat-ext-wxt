@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -8,10 +8,12 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from '../../utils/theme';
 import './style.css';
 
+
+
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
 
-  main(ctx) {
+  async main(ctx) {
     // create UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
@@ -19,6 +21,7 @@ export default defineContentScript({
       append: 'first',
       onMount: (container) => {
         const managementContainer = document.createElement('div');
+        container.parentElement?.prepend(managementContainer);
         const root = createRoot(managementContainer);
         root.render(
           <ThemeProvider theme={theme}>
@@ -28,8 +31,11 @@ export default defineContentScript({
             </LocalizationProvider>
           </ThemeProvider>
         );
-        
-        container.parentElement?.prepend(managementContainer);
+        return root;
+      },
+      onRemove: (root) => {
+        // Unmount the root when the UI is removed
+        root?.unmount();
       },
     });
 
@@ -40,14 +46,18 @@ export default defineContentScript({
         anchor,
         onMount: (container) => {
           const checkboxContainer = document.createElement('span');
+          container.parentElement?.prepend(checkboxContainer);
           const root = createRoot(checkboxContainer);
           root.render(
             <ThemeProvider theme={theme}>
               <OrderCheckbox orderId={orderId} />
             </ThemeProvider>
           );
-    
-          container.parentElement?.prepend(checkboxContainer);
+          return root;
+        },
+        onRemove: (root) => {
+          // Unmount the root when the UI is removed
+          root?.unmount();
         },
       });
     }
@@ -71,8 +81,8 @@ export default defineContentScript({
         childList: true,
         subtree: true,
       });
-    }
-    
+    };
+
     observeOrderIdElements();
     ui.autoMount();
   },
