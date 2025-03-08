@@ -9,11 +9,12 @@ import { theme } from '../../utils/theme';
 import './style.css';
 
 
-
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
 
   async main(ctx) {
+
+    
     // create UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
@@ -86,4 +87,7 @@ export default defineContentScript({
     observeOrderIdElements();
     ui.autoMount();
   },
+
+  
 });
+
