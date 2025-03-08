@@ -31,6 +31,11 @@ export default defineContentScript({
       // Save drivers data to storage
       if (customEvent.detail?.drivers) {
         try {
+          // delete key in driver object
+          customEvent.detail.drivers.forEach((driver: { domiciles: any; }) => {
+            delete driver.domiciles;
+          });
+          
           await storage.setItem('local:drivers', customEvent.detail.drivers);
           console.log('Drivers data saved to storage successfully');
         } catch (err) {
