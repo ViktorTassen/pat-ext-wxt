@@ -1,8 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import './style.css';
 import { Typography } from '@mui/material';
 
@@ -68,7 +65,7 @@ export default defineContentScript({
                 for (const mutation of mutations) {
                     if (!mutation.addedNodes.length) continue;
 
-                    const loadCardElements = document.querySelectorAll(".load-card:not([data-loadcard-initialized])");
+                    const loadCardElements = document.querySelectorAll(".load-card:not([data-checkbox-initialized])");
                     for (const element of loadCardElements) {
                         element.setAttribute("data-loadcard-initialized", "true");
                         const loadCardUi = createLoadCardUi(element as HTMLElement);

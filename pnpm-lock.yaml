@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@emotion/cache':
+    specifier: ^11.14.0
+    version: 11.14.0
   '@emotion/react':
     specifier: ^11.11.4
     version: 11.14.0(@types/react@19.0.10)(react@19.0.0)

@@ -93,29 +93,7 @@ export default defineContentScript({
             const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
             checkboxUi.mount();
           }
-          
-          // const orderIdElements = document.querySelectorAll("label:has([role='checkbox'])");
-          // for (const element of orderIdElements) {
-          //   const parent = element.parentElement;
-          //   if (!parent || parent.getAttribute("data-checkbox-initialized")) continue;
-
-          //   // Remove the original checkbox
-          //   if (parent.firstChild) {
-          //     parent.removeChild(parent.firstChild);
-          //   }
-
-          //   // Find the order ID element and get its text
-          //   const orderIdElement = parent.parentElement?.querySelector('.order-id');
-          //   const orderIdText = orderIdElement?.textContent?.trim();
-            
-          //   if (orderIdText) {
-          //     parent.setAttribute("data-checkbox-initialized", "true");
-          //     const checkboxUi = createCheckboxUi(parent, orderIdText);
-          //     checkboxUi.mount();
-          //   }
-          // };
-
-
+        
         }
       });
     
