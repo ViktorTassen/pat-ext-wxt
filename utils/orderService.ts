@@ -33,7 +33,7 @@ class OrderService {
     });
 
     // For delete operations, we consider 2xx status codes as success
-    if (endpoint.includes('/cancel/') && response.ok) {
+    if ((endpoint.includes('/cancel/') || endpoint.includes('/batch/cancel')) && response.ok) {
       return true;
     }
 
@@ -52,6 +52,20 @@ class OrderService {
       {
         cancellationReason: "FOUND_OTHER_WORK",
         cancellationComment: ""
+      }
+    );
+  }
+
+  async deleteOrders(orders: Array<{ id: string; version: number }>) {
+    return this.makeRequest(
+      '/api/loadboard/orders/batch/cancel',
+      'POST',
+      {
+        orders,
+        cancellationDetails: {
+          cancellationReason: "FOUND_OTHER_WORK",
+          cancellationComment: ""
+        }
       }
     );
   }
