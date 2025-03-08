@@ -7,7 +7,11 @@ import {
   Grid, 
   SelectChangeEvent,
   Typography,
-  MenuItem
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Chip
 } from "@mui/material";
 import { DeleteOutline, ContentCopy, AccessTime } from "@mui/icons-material";
 import dayjs from "dayjs";
@@ -16,14 +20,12 @@ import LoadboardTextField from "./LoadboardTextField";
 import LoadboardSelect from "./LoadboardSelect";
 import ChangesSummary from "./ChangesSummary";
 import { DeleteProgress } from "./DeleteProgress";
+import type { Driver } from "../utils/types";
 
-// Radius options for origin and destination
 const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
 
-// Stem time options in minutes
 const STEM_TIME_OPTIONS = ["5", "15", "30", "45", "60", "90", "120", "150", "180", "210", "240", "480", "720", "1440"];
 
-// Format stem time to be more readable
 const formatStemTime = (minutes: string): string => {
   const mins = parseInt(minutes, 10);
   if (mins < 60) {
@@ -40,12 +42,12 @@ const formatStemTime = (minutes: string): string => {
 };
 
 export function OrderManagement() {
-  // State for selected order IDs
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
-  // State for all orders from storage
   const [allOrders, setAllOrders] = useState<any[]>([]);
+  const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
+  const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
+  const [removeDrivers, setRemoveDrivers] = useState<boolean>(false);
   
-  // Progress states
   const [deleteProgress, setDeleteProgress] = useState<{
     completed: number;
     failed: number;
@@ -55,23 +57,18 @@ export function OrderManagement() {
   const [modifyProgress, setModifyProgress] = useState<typeof deleteProgress>(null);
   const [cloneProgress, setCloneProgress] = useState<typeof deleteProgress>(null);
   
-  // Error states
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [modifyError, setModifyError] = useState<string | null>(null);
   const [cloneError, setCloneError] = useState<string | null>(null);
   
-  // Action state
   const [activeAction, setActiveAction] = useState("0");
   
-  // Date time states
   const [startDateTime, setStartDateTime] = useState<dayjs.Dayjs | null>(null);
   const [endDateTime, setEndDateTime] = useState<dayjs.Dayjs | null>(null);
   
-  // Calendar open states
   const [startCalendarOpen, setStartCalendarOpen] = useState<boolean>(false);
   const [endCalendarOpen, setEndCalendarOpen] = useState<boolean>(false);
   
-  // Other form states - empty string means "don't change"
   const [minPayout, setMinPayout] = useState<string>("");
   const [minPricePerMile, setMinPricePerMile] = useState<string>("");
   const [stemTime, setStemTime] = useState<string>("none");
@@ -79,23 +76,29 @@ export function OrderManagement() {
   const [destinationRadius, setDestinationRadius] = useState<string>("none");
   const [maxStops, setMaxStops] = useState<string>("");
 
-  // Load orders from storage on component mount
   useEffect(() => {
-    const loadOrders = async () => {
+    const loadData = async () => {
       try {
-        const orders = await storage.getItem('local:orders') as any[];
+        const [orders, drivers] = await Promise.all([
+          storage.getItem('local:orders') as Promise<any[]>,
+          storage.getItem('local:drivers') as Promise<Driver[]>
+        ]);
+        
         if (orders) {
           setAllOrders(orders);
-          console.log("Loaded orders:", orders);
+        }
+        
+        if (drivers) {
+          const activeDrivers = drivers.filter(driver => driver.status === 'active');
+          setAllDrivers(activeDrivers);
         }
       } catch (error) {
-        console.error("Error loading orders from storage:", error);
+        console.error("Error loading data from storage:", error);
       }
     };
 
-    loadOrders();
+    loadData();
     
-    // Listen for checkbox selection events
     const handleOrderSelected = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { orderId, selected } = customEvent.detail;
@@ -111,7 +114,6 @@ export function OrderManagement() {
       });
     };
 
-    // Listen for progress events
     const handleDeleteProgress = (event: Event) => {
       const customEvent = event as CustomEvent;
       setDeleteProgress(customEvent.detail);
@@ -127,7 +129,6 @@ export function OrderManagement() {
       setCloneProgress(customEvent.detail);
     };
 
-    // Listen for success/error events
     const handleDeleteSuccess = (event: Event) => {
       const customEvent = event as CustomEvent;
       setDeleteProgress({
@@ -198,9 +199,7 @@ export function OrderManagement() {
     };
   }, []);
 
-  // Reset form fields when changing action
   useEffect(() => {
-    // Reset form
     setStartDateTime(null);
     setEndDateTime(null);
     setDeleteProgress(null);
@@ -209,8 +208,9 @@ export function OrderManagement() {
     setDeleteError(null);
     setModifyError(null);
     setCloneError(null);
+    setSelectedDriverIds([]);
+    setRemoveDrivers(false);
     
-    // Always reset these fields
     setMinPayout("");
     setMinPricePerMile("");
     setStemTime("none");
@@ -219,7 +219,6 @@ export function OrderManagement() {
     setMaxStops("");
   }, [activeAction]);
 
-  // Action handlers
   const handleDeleteAllOrders = async () => {
     setDeleteError(null);
     const ordersToDelete = allOrders.map(order => ({
@@ -255,7 +254,6 @@ export function OrderManagement() {
       return;
     }
     
-    // Only include fields that have values
     const changes: Record<string, any> = {};
     
     if (startDateTime) {
@@ -288,6 +286,13 @@ export function OrderManagement() {
     
     if (maxStops) {
       changes.maxStops = maxStops;
+    }
+
+    // Handle driver changes
+    if (removeDrivers) {
+      changes.selectedDriverIds = null;
+    } else if (selectedDriverIds.length > 0) {
+      changes.selectedDriverIds = selectedDriverIds;
     }
     
     if (Object.keys(changes).length === 0) {
@@ -309,7 +314,6 @@ export function OrderManagement() {
       return;
     }
     
-    // Build clone configuration - all fields are optional
     const changes: Record<string, any> = {};
     
     if (startDateTime) {
@@ -344,6 +348,13 @@ export function OrderManagement() {
       changes.maxStops = maxStops;
     }
 
+    // Handle driver changes
+    if (removeDrivers) {
+      changes.selectedDriverIds = null;
+    } else if (selectedDriverIds.length > 0) {
+      changes.selectedDriverIds = selectedDriverIds;
+    }
+
     const ordersToClone = allOrders.filter(order => selectedOrderIds.has(order.alias));
     
     window.dispatchEvent(new CustomEvent('cloneOrdersRequest', {
@@ -354,7 +365,6 @@ export function OrderManagement() {
     }));
   };
 
-  // Handle date time picker changes
   const handleStartDateTimeChange = (value: any) => {
     if (value && dayjs(value).isValid()) {
       setStartDateTime(dayjs(value));
@@ -371,7 +381,6 @@ export function OrderManagement() {
     }
   };
 
-  // Handle calendar open state changes
   const handleStartCalendarOpenChange = (isOpen: boolean) => {
     setStartCalendarOpen(isOpen);
   };
@@ -384,7 +393,19 @@ export function OrderManagement() {
     setActiveAction(event.target.value);
   };
 
-  // Action options for the select dropdown
+  const handleDriverChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value;
+    if (typeof value === 'string' && value === 'remove') {
+      setRemoveDrivers(true);
+      setSelectedDriverIds([]);
+      return;
+    }
+    
+    setRemoveDrivers(false);
+    const selectedValues = typeof value === 'string' ? value.split(',') : value;
+    setSelectedDriverIds(selectedValues.slice(0, 2));
+  };
+
   const actionOptions = [
     {
       value: "modify",
@@ -424,7 +445,6 @@ export function OrderManagement() {
     }
   ];
 
-  // Create options arrays for select components
   const stemTimeOptions = [
     { value: "none", label: "Keep current" },
     ...STEM_TIME_OPTIONS.map(option => ({ 
@@ -441,7 +461,6 @@ export function OrderManagement() {
     }))
   ];
 
-  // Get changes for summary component
   const getChangesForSummary = () => {
     const changes: Record<string, string> = {};
     
@@ -617,6 +636,72 @@ export function OrderManagement() {
                 />
               </Grid>
             </Grid>
+
+            <FormControl fullWidth variant="filled">
+              <InputLabel id="driver-select-label">Select Drivers (max 2)</InputLabel>
+              <Select
+                labelId="driver-select-label"
+                multiple
+                value={removeDrivers ? ['remove'] : selectedDriverIds}
+                onChange={handleDriverChange}
+                renderValue={(selected) => {
+                  if (removeDrivers) {
+                    return <Chip label="Remove all drivers" size="small" />;
+                  }
+                  return (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => {
+                        const driver = allDrivers.find(d => d.latestTransientDriverId === value);
+                        return (
+                          <Chip 
+                            key={value} 
+                            label={driver ? `${driver.firstName} ${driver.lastName}` : value}
+                            size="small"
+                          />
+                        );
+                      })}
+                    </Box>
+                  );
+                }}
+                sx={{
+                  overflow: 'hidden',
+                  borderRadius: 1,
+                  fontSize: "0.8rem",
+                  backgroundColor: "transparent",
+                  border: '1px solid',
+                  borderColor: "#6f7880",
+                  '&:hover': {
+                    backgroundColor: "transparent",
+                    borderColor: "primary.main",
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: "transparent",
+                    boxShadow: '0px 0px 0px 1px',
+                    borderColor: "primary.main",
+                  },
+                  '&:before, &:after': {
+                    display: 'none',
+                  }
+                }}
+              >
+                <MenuItem value="none" disabled>
+                  Keep current
+                </MenuItem>
+                <MenuItem value="remove">
+                  Remove all drivers
+                </MenuItem>
+                <Divider />
+                {allDrivers.map((driver) => (
+                  <MenuItem 
+                    key={driver.latestTransientDriverId} 
+                    value={driver.latestTransientDriverId}
+                    disabled={selectedDriverIds.length >= 2 && !selectedDriverIds.includes(driver.latestTransientDriverId)}
+                  >
+                    {driver.firstName} {driver.lastName} ({driver.emailId})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             
             <ChangesSummary
               changes={getChangesForSummary()}

@@ -117,6 +117,16 @@ class OrderService {
       updatedOrder.destinationCityRadius.value = parseInt(changes.destinationRadius, 10);
     }
 
+    // Handle driver changes
+    if (changes.selectedDriverIds === null) {
+      // Remove all drivers but keep existing driver type
+      updatedOrder.supplyTransientDriverIdList = [];
+    } else if (Array.isArray(changes.selectedDriverIds)) {
+      // Update drivers and driver type based on number of selected drivers
+      updatedOrder.supplyTransientDriverIdList = changes.selectedDriverIds;
+      updatedOrder.driverTypes = [changes.selectedDriverIds.length > 1 ? 'TEAM' : 'SOLO'];
+    }
+
     return updatedOrder;
   }
 }

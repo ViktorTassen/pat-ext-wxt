@@ -1,5 +1,13 @@
 export type Region = 'US' | 'UK' | 'DE' | 'ES' | 'FR' | 'IT' | 'PL' | 'IN' | 'CZ' | 'JP';
 
+export interface Driver {
+  firstName: string;
+  lastName: string;
+  latestTransientDriverId: string;
+  status: string;
+  emailId: string;
+}
+
 export interface Order {
   id: string;
   version: number;
@@ -27,6 +35,8 @@ export interface Order {
     unit: string;
     value: number;
   };
+  driverTypes: string[];
+  supplyTransientDriverIdList: string[];
 }
 
 export interface OrderChanges {
@@ -38,6 +48,7 @@ export interface OrderChanges {
   maxStops?: string;
   originRadius?: string;
   destinationRadius?: string;
+  selectedDriverIds?: string[] | null;
 }
 
 export interface ProgressEvent {

@@ -23,20 +23,27 @@ export default defineContentScript({
         }
       }
     });
+
+    interface Driver {
+      domiciles?: any;
+      [key: string]: any;
+    }
     
     window.addEventListener('drivers', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Drivers data received:', customEvent.detail?.drivers);
       
       // Save drivers data to storage
-      if (customEvent.detail?.drivers) {
+      if (customEvent.detail?.drivers && Array.isArray(customEvent.detail.drivers)) {
         try {
-          // delete key in driver object
-          customEvent.detail.drivers.forEach((driver: { domiciles: any; }) => {
-            delete driver.domiciles;
+          // Create a safe copy of the drivers array and remove domiciles
+          const sanitizedDrivers = customEvent.detail.drivers.map((driver: Driver) => {
+            // Create a new object without the domiciles property
+            const { domiciles, ...driverWithoutDomiciles } = driver;
+            return driverWithoutDomiciles;
           });
           
-          await storage.setItem('local:drivers', customEvent.detail.drivers);
+          await storage.setItem('local:drivers', sanitizedDrivers);
           console.log('Drivers data saved to storage successfully');
         } catch (err) {
           console.error("Error saving drivers data to storage:", err);
