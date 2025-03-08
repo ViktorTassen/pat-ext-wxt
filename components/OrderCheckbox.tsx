@@ -28,7 +28,12 @@ export function OrderCheckbox({ orderId }: OrderCheckboxProps) {
         display: 'flex', 
       }}
     >
-      <Checkbox 
+      <Checkbox
+      // bigger checkbox
+      sx={{
+        '& .MuiSvgIcon-root': { fontSize: 32 }
+        }
+      }
         className="order-checkbox" 
         checked={checked} 
         onChange={handleCheckedChange} 

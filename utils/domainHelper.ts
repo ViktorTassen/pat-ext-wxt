@@ -10,6 +10,7 @@ export const SUPPORTED_DOMAINS = {
   'relay.amazon.pl': { region: 'PL', unit: 'km' },
   'relay.amazon.in': { region: 'IN', unit: 'km' },
   'relay.amazon.cz': { region: 'CZ', unit: 'km' },
+  'relay.amazon.ca': { region: 'CA', unit: 'km' },
   'relay.amazon.co.jp': { region: 'JP', unit: 'km' },
 } as const;
 
@@ -46,6 +47,7 @@ export function formatCurrency(value: string): string {
 function getLocaleFromRegion(region: Region): string {
   const localeMap: Record<Region, string> = {
     US: 'en-US',
+    CA: 'en-US',
     UK: 'en-GB',
     DE: 'de-DE',
     ES: 'es-ES',

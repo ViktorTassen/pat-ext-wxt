@@ -22,9 +22,6 @@ export default defineUnlistedScript(() => {
                 drivers: json.data
               }
             }))
-            // storage.setItem('local:drivers', json.data).catch(err => {
-            //   console.error("Error saving drivers data:", err);
-            // });
           }
         }).catch(err => {
           console.error("Error processing drivers API response:", err);
@@ -42,9 +39,6 @@ export default defineUnlistedScript(() => {
               }
             }))
 
-            // storage.setItem('local:orders', json.truckCapacityOrders).catch(err => {
-            //   console.error("Error saving orders data:", err);
-            // });
           }
         }).catch(err => {
           console.error("Error processing orders API response:", err);
@@ -54,10 +48,5 @@ export default defineUnlistedScript(() => {
       // Return the original response
       return response;
     };
-
-
-
-    
-
 
   });

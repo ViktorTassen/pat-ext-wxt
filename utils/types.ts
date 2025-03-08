@@ -1,4 +1,4 @@
-export type Region = 'US' | 'UK' | 'DE' | 'ES' | 'FR' | 'IT' | 'PL' | 'IN' | 'CZ' | 'JP';
+export type Region = 'US' | 'UK' | 'DE' | 'ES' | 'FR' | 'IT' | 'PL' | 'IN' | 'CZ' | 'JP' | 'CA';
 
 export interface Driver {
   firstName: string;

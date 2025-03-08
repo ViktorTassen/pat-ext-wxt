@@ -47,6 +47,8 @@ export function OrderManagement() {
   const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
   const [removeDrivers, setRemoveDrivers] = useState<boolean>(false);
+  const [isActiveOrdersPage, setIsActiveOrdersPage] = useState<boolean>(true);
+  const [hasOpenOrders, setHasOpenOrders] = useState<boolean>(false);
   
   const [deleteProgress, setDeleteProgress] = useState<{
     completed: number;
@@ -77,6 +79,11 @@ export function OrderManagement() {
   const [maxStops, setMaxStops] = useState<string>("");
 
   useEffect(() => {
+    // Check if we're on the active orders page
+    const urlParams = new URLSearchParams(window.location.search);
+    const state = urlParams.get('state');
+    setIsActiveOrdersPage(state === 'active');
+
     const loadData = async () => {
       try {
         const [orders, drivers] = await Promise.all([
@@ -86,6 +93,8 @@ export function OrderManagement() {
         
         if (orders) {
           setAllOrders(orders);
+          // Check if there are any OPEN orders
+          setHasOpenOrders(orders.some(order => order.status === 'OPEN'));
         }
         
         if (drivers) {
@@ -221,10 +230,12 @@ export function OrderManagement() {
 
   const handleDeleteAllOrders = async () => {
     setDeleteError(null);
-    const ordersToDelete = allOrders.map(order => ({
-      id: order.id,
-      version: order.version
-    }));
+    const ordersToDelete = allOrders
+      .filter(order => order.status === 'OPEN')
+      .map(order => ({
+        id: order.id,
+        version: order.version
+      }));
     
     window.dispatchEvent(new CustomEvent('deleteOrdersRequest', {
       detail: { orders: ordersToDelete }
@@ -238,7 +249,7 @@ export function OrderManagement() {
     
     setDeleteError(null);
     const ordersToDelete = allOrders
-      .filter(order => selectedOrderIds.has(order.alias))
+      .filter(order => selectedOrderIds.has(order.alias) && order.status === 'OPEN')
       .map(order => ({
         id: order.id,
         version: order.version
@@ -257,11 +268,11 @@ export function OrderManagement() {
     const changes: Record<string, any> = {};
     
     if (startDateTime) {
-      changes.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
+      changes.startDateTime = startDateTime.startOf('minute').format("YYYY-MM-DD HH:mm");
     }
     
     if (endDateTime) {
-      changes.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
+      changes.endDateTime = endDateTime.startOf('minute').format("YYYY-MM-DD HH:mm");
     }
     
     if (minPayout) {
@@ -299,7 +310,9 @@ export function OrderManagement() {
       return;
     }
 
-    const ordersToModify = allOrders.filter(order => selectedOrderIds.has(order.alias));
+    const ordersToModify = allOrders.filter(order => 
+      selectedOrderIds.has(order.alias) && order.status === 'OPEN'
+    );
     
     window.dispatchEvent(new CustomEvent('modifyOrdersRequest', {
       detail: { 
@@ -317,11 +330,11 @@ export function OrderManagement() {
     const changes: Record<string, any> = {};
     
     if (startDateTime) {
-      changes.startDateTime = startDateTime.format("YYYY-MM-DD HH:mm");
+      changes.startDateTime = startDateTime.startOf('minute').format("YYYY-MM-DD HH:mm");
     }
     
     if (endDateTime) {
-      changes.endDateTime = endDateTime.format("YYYY-MM-DD HH:mm");
+      changes.endDateTime = endDateTime.startOf('minute').format("YYYY-MM-DD HH:mm");
     }
     
     if (minPayout) {
@@ -367,7 +380,7 @@ export function OrderManagement() {
 
   const handleStartDateTimeChange = (value: any) => {
     if (value && dayjs(value).isValid()) {
-      setStartDateTime(dayjs(value));
+      setStartDateTime(dayjs(value).startOf('minute'));
     } else {
       setStartDateTime(null);
     }
@@ -375,7 +388,7 @@ export function OrderManagement() {
 
   const handleEndDateTimeChange = (value: any) => {
     if (value && dayjs(value).isValid()) {
-      setEndDateTime(dayjs(value));
+      setEndDateTime(dayjs(value).startOf('minute'));
     } else {
       setEndDateTime(null);
     }
@@ -411,15 +424,6 @@ export function OrderManagement() {
 
   const actionOptions = [
     {
-      value: "modify",
-      label: (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <AccessTime sx={{ fontSize: 16, mr: 1 }} />
-          <span>Modify Orders</span>
-        </Box>
-      )
-    },
-    {
       value: "clone",
       label: (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -428,24 +432,35 @@ export function OrderManagement() {
         </Box>
       )
     },
-    {
-      value: "delete-selected",
-      label: (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
-          <span>Delete Selected</span>
-        </Box>
-      )
-    },
-    {
-      value: "delete-all",
-      label: (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
-          <span>Delete All</span>
-        </Box>
-      )
-    }
+    ...(isActiveOrdersPage ? [
+      {
+        value: "modify",
+        label: (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <AccessTime sx={{ fontSize: 16, mr: 1 }} />
+            <span>Modify Orders</span>
+          </Box>
+        )
+      },
+      {
+        value: "delete-selected",
+        label: (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+            <span>Delete Selected</span>
+          </Box>
+        )
+      },
+      {
+        value: "delete-all",
+        label: (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <DeleteOutline sx={{ fontSize: 16, mr: 1 }} />
+            <span>Delete All</span>
+          </Box>
+        )
+      }
+    ] : [])
   ];
 
   const stemTimeOptions = [
@@ -508,12 +523,12 @@ export function OrderManagement() {
       sx={{ 
         p: 2, 
         mb: 2, 
-        maxWidth: 500, 
+        maxWidth: 400, 
         borderRadius: 1 
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <Box sx={{ width: 200 }}>
+        <Box sx={{ width: 160 }}>
           <LoadboardSelect
             id="action-select-label"
             label="Select action"
@@ -538,8 +553,8 @@ export function OrderManagement() {
         </Box>
         <Box 
           sx={{ 
-            px: 1, 
-            py: 0.5, 
+            px: 1.5, 
+            py: 1, 
             bgcolor: 'primary.50', 
             color: 'primary.800', 
             borderRadius: 1, 
@@ -551,7 +566,7 @@ export function OrderManagement() {
         </Box>
       </Box>
       
-      <Divider sx={{ mt: 2 }} />
+      {/* <Divider sx={{ mt: 2 }} /> */}
       
       {(activeAction === "modify" || activeAction === "clone") && (
         <Box sx={{ mt: 4 }}>
@@ -767,7 +782,7 @@ export function OrderManagement() {
       )}
       
       {activeAction === "delete-selected" && (
-        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+        <Box sx={{ mt:4 }}>
           <Button 
             variant="contained" 
             color="error"
@@ -799,7 +814,7 @@ export function OrderManagement() {
       )}
       
       {activeAction === "delete-all" && (
-        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+        <Box sx={{ mt:4 }}>
           <Button 
             variant="contained" 
             color="error"
