@@ -1,4 +1,4 @@
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -7,7 +7,6 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from '../../utils/theme';
 import './style.css';
-
 
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
