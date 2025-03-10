@@ -7,13 +7,22 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from '../../utils/theme';
 import './style.css';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+
+
+// Create a shared cache for Emotion
+const emotionCache = createCache({
+  key: 'pat',
+});
+
+
 
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
 
   async main(ctx) {
 
-    
     // create UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
@@ -24,16 +33,20 @@ export default defineContentScript({
         container.parentElement?.prepend(managementContainer);
         const root = createRoot(managementContainer);
         root.render(
+
+          <CacheProvider value={emotionCache}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <OrderManagement />
             </LocalizationProvider>
           </ThemeProvider>
+        </CacheProvider>
         );
         return root;
       },
       onRemove: (root) => {
+        console.log('removing !!!!!');
         // Unmount the root when the UI is removed
         root?.unmount();
       },
@@ -49,9 +62,11 @@ export default defineContentScript({
           container.parentElement?.prepend(checkboxContainer);
           const root = createRoot(checkboxContainer);
           root.render(
+            <CacheProvider value={emotionCache}>
             <ThemeProvider theme={theme}>
               <OrderCheckbox orderId={orderId} />
             </ThemeProvider>
+          </CacheProvider>
           );
           return root;
         },
