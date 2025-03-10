@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import LoadboardTextField from './LoadboardTextField';
 import LoadboardSelect from './LoadboardSelect';
-import { useLoadboard } from '../utils/LoadboardContext';
 import type { Driver } from '../utils/types';
 
 interface LoadCardProps {
@@ -30,6 +29,8 @@ function formatStemTime(minutes: string): string {
 }
 
 export const LoadCard: React.FC<LoadCardProps> = ({ workOpportunityId }) => {
+  console.log('LoadCard rendering with ID:', workOpportunityId); // Debug log
+
   const { opportunities, drivers, isLoading } = useLoadboard();
   const [minPayout, setMinPayout] = useState<string>('');
   const [minPricePerMile, setMinPricePerMile] = useState<string>('');
@@ -37,6 +38,15 @@ export const LoadCard: React.FC<LoadCardProps> = ({ workOpportunityId }) => {
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
 
   const workOpportunity = opportunities.find(opp => opp.id === workOpportunityId);
+  
+  useEffect(() => {
+    console.log('LoadCard data:', { 
+      opportunitiesCount: opportunities.length,
+      driversCount: drivers.length,
+      isLoading,
+      workOpportunityFound: !!workOpportunity
+    });
+  }, [opportunities, drivers, isLoading, workOpportunity]);
 
   const handleDriverChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
@@ -45,7 +55,6 @@ export const LoadCard: React.FC<LoadCardProps> = ({ workOpportunityId }) => {
   };
 
   const handlePostTruck = () => {
-    // TODO: Implement post truck functionality
     console.log('Posting truck with:', {
       workOpportunityId,
       minPayout,
@@ -55,7 +64,13 @@ export const LoadCard: React.FC<LoadCardProps> = ({ workOpportunityId }) => {
     });
   };
 
-  if (isLoading || !workOpportunity) {
+  if (isLoading) {
+    console.log('LoadCard is loading...'); // Debug log
+    return <Box sx={{ p: 2 }}>Loading...</Box>;
+  }
+
+  if (!workOpportunity) {
+    console.log('Work opportunity not found for ID:', workOpportunityId); // Debug log
     return null;
   }
 
