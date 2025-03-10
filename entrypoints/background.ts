@@ -21,6 +21,18 @@ const addNewRules = () => {
       action: { type: "block" },
       condition: { urlFilter: "similar" },
     },
+    {
+      id: 2,
+      priority: 1,
+      action: { type: "block" },
+      condition: { urlFilter: "recommendations" },
+    },
+    {
+      id: 3,
+      priority: 1,
+      action: { type: "block" },
+      condition: { urlFilter: "api/loadboard/summary" },
+    },
   ];
   updateDynamicRules(newRules as any);
 };

@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import './style.css';
-import { Typography } from '@mui/material';
 import { theme } from '../../utils/theme';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -25,9 +24,9 @@ export default defineContentScript({
                     const root = createRoot(LoadCardContainer);
                     root.render(
                         <ThemeProvider theme={theme}>
-                            <Typography variant="h6" component="div">
-                                Load Card
-                            </Typography>
+                            <CacheProvider value={emotionCache}>
+                                <LoadCard workOpportunityId={anchor.id} />
+                            </CacheProvider>
 
                         </ThemeProvider>
                     );

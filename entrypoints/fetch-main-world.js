@@ -72,13 +72,7 @@ export default defineUnlistedScript(() => {
       return response;
     } catch (error) {
       // If it's an abort error, just log and continue
-      if (error.name === 'AbortError') {
-        console.log("Request was aborted:", url);
-        throw error;
-      }
       
-      console.error("Fetch interceptor error:", error);
-      throw error;
     }
   };
 
