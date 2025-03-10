@@ -1,28 +1,37 @@
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from '@mui/material/styles';
 import './style.css';
-import { Typography } from '@mui/material';
+import { LoadCard } from '../../components/LoadCard';
 import { theme } from '../../utils/theme';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+import { LoadboardProvider } from '../../utils/LoadboardContext';
+
+// Create a shared cache for Emotion
+const emotionCache = createCache({
+  key: 'loadboard',
+});
 
 export default defineContentScript({
     matches: ['*://relay.amazon.com/loadboard*'],
 
     main(ctx) {
-        // Create the checkbox UI
+        // Create the load card UI
         function createLoadCardUi(anchor: HTMLElement) {
             return createIntegratedUi(ctx, {
                 position: 'inline',
                 anchor,
                 onMount: (container) => {
-                    const LoadCardContainer = document.createElement('span');
+                    const LoadCardContainer = document.createElement('div');
                     const root = createRoot(LoadCardContainer);
                     root.render(
-                        <ThemeProvider theme={theme}>
-                            <Typography variant="h6" component="div">
-                                Load Card
-                            </Typography>
-                            {/* <OrderCheckbox orderId={orderId} /> */}
-                        </ThemeProvider>
+                        <CacheProvider value={emotionCache}>
+                            <ThemeProvider theme={theme}>
+                                <LoadboardProvider>
+                                    <LoadCard workOpportunityId={anchor.id} />
+                                </LoadboardProvider>
+                            </ThemeProvider>
+                        </CacheProvider>
                     );
 
                     container.prepend(LoadCardContainer);
