@@ -54,7 +54,7 @@ export default defineContentScript({
                     );
                     for (const element of uuidElements) {
                         element.setAttribute("data-loadcard-initialized", "true");
-                        const loadCardUi = createLoadCardUi(element as HTMLElement);
+                        const loadCardUi = createLoadCardUi(element.parentElement as HTMLElement);
                         loadCardUi.mount();
                     }
                   }

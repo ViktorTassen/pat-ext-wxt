@@ -50,6 +50,55 @@ export default defineContentScript({
       },
     });
 
+
+        // Create the checkbox UI
+        function createCheckboxUi(anchor: HTMLElement, orderId: string) {
+          return createIntegratedUi(ctx, {
+            position: 'inline',
+            anchor,
+            onMount: (container) => {
+              const checkboxContainer = document.createElement('span');
+              container.parentElement?.prepend(checkboxContainer);
+              const root = createRoot(checkboxContainer);
+              root.render(
+                <CacheProvider value={emotionCache}>
+                <ThemeProvider theme={theme}>
+                  <OrderCheckbox orderId={orderId} />
+                </ThemeProvider>
+              </CacheProvider>
+              );
+              return root;
+            },
+            onRemove: (root) => {
+              // Unmount the root when the UI is removed
+              root?.unmount();
+            },
+          });
+        }
+        
+        // Observe the order ID elements and create the checkboxes
+        function observeOrderIdElements() {
+          const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              if (!mutation.addedNodes.length) continue;
+    
+              const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
+              for (const element of orderIdElements) {
+                element.setAttribute("data-checkbox-initialized", "true");
+                const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
+                checkboxUi.mount();
+              }
+            }
+          });
+        
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+          });
+        };
+    
+        observeOrderIdElements();
+
     ui.autoMount();
   },
 

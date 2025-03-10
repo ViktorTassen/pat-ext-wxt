@@ -33,6 +33,10 @@ const addNewRules = () => {
       action: { type: "block" },
       condition: { urlFilter: "api/loadboard/summary" },
     },
+
+
+
+   
   ];
   updateDynamicRules(newRules as any);
 };
