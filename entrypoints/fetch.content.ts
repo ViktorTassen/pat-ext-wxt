@@ -9,7 +9,7 @@ export default defineContentScript({
     console.log('Done!');
 
     // Listen for custom events from the fetch interceptor
-    window.addEventListener('orders', async (event: Event) => {
+    window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Orders data received:', customEvent.detail?.orders);
       
@@ -29,7 +29,7 @@ export default defineContentScript({
       [key: string]: any;
     }
     
-    window.addEventListener('drivers', async (event: Event) => {
+    window.addEventListener('pat-drivers', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Drivers data received:', customEvent.detail?.drivers);
       
@@ -47,6 +47,22 @@ export default defineContentScript({
           console.log('Drivers data saved to storage successfully');
         } catch (err) {
           console.error("Error saving drivers data to storage:", err);
+        }
+      }
+    });
+
+
+    window.addEventListener('pat-workOpportunities', async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('workOpportunities data received:', customEvent.detail?.workOpportunities);
+      
+      // Save drivers data to storage
+      if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
+        try {
+          await storage.setItem('local:workOpportunities', customEvent.detail?.workOpportunities);
+          console.log('pat-workOpportunities data saved to storage successfully');
+        } catch (err) {
+          console.error("Error saving pat-workOpportunities data to storage:", err);
         }
       }
     });

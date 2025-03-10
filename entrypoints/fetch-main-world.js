@@ -17,7 +17,7 @@ export default defineUnlistedScript(() => {
         responseClone.json().then(json => {
           if (json?.data) {
             console.log("Drivers data intercepted");
-            window.dispatchEvent(new CustomEvent('drivers', {
+            window.dispatchEvent(new CustomEvent('pat-drivers', {
               detail: { 
                 drivers: json.data
               }
@@ -33,9 +33,27 @@ export default defineUnlistedScript(() => {
         responseClone.json().then(json => {
           if (json?.truckCapacityOrders) {
             console.log('Orders intercepted');
-            window.dispatchEvent(new CustomEvent('orders', {
+            window.dispatchEvent(new CustomEvent('pat-orders', {
               detail: { 
                 orders: json.truckCapacityOrders
+              }
+            }))
+
+          }
+        }).catch(err => {
+          console.error("Error processing orders API response:", err);
+        });
+      }
+
+
+      if (url.includes('api/loadboard/search')) {
+        const responseClone = response.clone();
+        responseClone.json().then(json => {
+          if (json?.workOpportunities) {
+            console.log('Orders intercepted');
+            window.dispatchEvent(new CustomEvent('pat-workOpportunities', {
+              detail: { 
+                workOpportunities: json.workOpportunities
               }
             }))
 

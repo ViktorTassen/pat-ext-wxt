@@ -1,9 +1,8 @@
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import './style.css';
 import { Typography } from '@mui/material';
 import { theme } from '../../utils/theme';
-
 
 export default defineContentScript({
     matches: ['*://relay.amazon.com/loadboard*'],
@@ -31,21 +30,33 @@ export default defineContentScript({
             });
         }
 
+        // Helper function to check if an element is a load card
+        function isLoadCard(element: Element): boolean {
+            // Check for UUID-style ID
+            if (!element.id || element.id.length <= 30) return false;
+            const hasPricing = !!element.querySelector('.wo-total_payout');
+            
+            return hasPricing;
+        }
+
         // Observe the order ID elements and create the card UI
         function observeLoadCardElements() {
             const observer = new MutationObserver((mutations) => {
                 for (const mutation of mutations) {
                     if (!mutation.addedNodes.length) continue;
 
-                    const loadCardElements = document.querySelectorAll(".load-card:not([data-loadcard-initialized])");
-                    for (const element of loadCardElements) {
-                        element.setAttribute("data-loadcard-initialized", "true");
-                        const loadCardUi = createLoadCardUi(element as HTMLElement);
-                        loadCardUi.mount();
+                    // Find all divs that might be load cards
+                    const potentialLoadCards = document.querySelectorAll(
+                        'div[id]:not([data-loadcard-initialized])'
+                    );
+
+                    for (const element of potentialLoadCards) {
+                        if (isLoadCard(element)) {
+                            element.setAttribute("data-loadcard-initialized", "true");
+                            const loadCardUi = createLoadCardUi(element.parentElement as HTMLElement);
+                            loadCardUi.mount();
+                        }
                     }
-
-
-
                 }
             });
 
