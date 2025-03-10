@@ -32,7 +32,7 @@ export default defineContentScript({
                         </ThemeProvider>
                     );
 
-                    container.prepend(LoadCardContainer);
+                    container.append(LoadCardContainer);
                     return root;
                 },
                 onRemove: (root) => {
@@ -62,7 +62,7 @@ export default defineContentScript({
                 }
               });
 
-              
+
             const activeTabBody = document.getElementById("active-tab-body");
             if (activeTabBody) {
                 observer.observe(activeTabBody, {
