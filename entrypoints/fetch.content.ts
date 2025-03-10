@@ -2,16 +2,16 @@ import { storageManager } from '../utils/storageManager';
 import { Driver } from '../utils/types';
 
 export default defineContentScript({
-  matches: ['*://*/*'],
+  matches: ['https://relay.amazon.com/loadboard/*'],
   runAt: "document_start",
   async main() {
-    console.log('Injecting script...');
+    console.log('Injecting script fetch-main-world...');
     await injectScript('/fetch-main-world.js', {
       keepInDom: true,
     });
     console.log('Done!');
 
-   // save orders to localStorage
+    // save orders to localStorage
     window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Orders data received:', customEvent.detail?.orders);

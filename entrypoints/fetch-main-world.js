@@ -3,12 +3,14 @@ export default defineUnlistedScript(() => {
     const originalFetch = window.fetch;
 
     // Replace the global fetch with our interceptor
-    window.fetch = async function(input, init) {
+    window.fetch = async function (...args) {
       // Get the URL string
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-      
-      // Call the original fetch
-      const response = await originalFetch.call(this, input, init);
+      const request = args[0];
+      const url = request instanceof Request ? request.url : request instanceof URL ? request.href : request;
+
+      // Call the original fetch function
+      const response = await originalFetch(...args);
+
       
       // Process specific API endpoints
       if (url.includes('api/drivers')) {
@@ -49,6 +51,7 @@ export default defineUnlistedScript(() => {
       if (url.includes('api/loadboard/search')) {
         const responseClone = response.clone();
         responseClone.json().then(json => {
+          console.log("json?.workOpportunities", json?.workOpportunities)
           if (json?.workOpportunities) {
             console.log('Orders intercepted');
             window.dispatchEvent(new CustomEvent('pat-workOpportunities', {
@@ -67,8 +70,27 @@ export default defineUnlistedScript(() => {
       return response;
     };
 
-    
-
-
+  
+    // Fetch drivers
+    try {
+      const response = fetch("https://relay.amazon.com/api/drivers/basic", {
+        headers: {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin"
+        },
+        referrer: "https://relay.amazon.com/loadboard/orders?state=active",
+        referrerPolicy: "strict-origin-when-cross-origin",
+        body: null,
+        method: "GET",
+        mode: "cors",
+        credentials: "include"
+      });
+  
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+    }
 
   });

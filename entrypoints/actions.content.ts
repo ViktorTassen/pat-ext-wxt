@@ -1,5 +1,5 @@
 export default defineContentScript({
-    matches: ['*://*/*'],
+    matches: ['https://relay.amazon.com/loadboard/orders'],
     runAt: "document_start",
     async main() {
       console.log('Injecting script...');
