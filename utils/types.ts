@@ -6,6 +6,7 @@ export interface Driver {
   latestTransientDriverId: string;
   status: string;
   emailId: string;
+  domiciles?: any;
 }
 
 export interface Order {

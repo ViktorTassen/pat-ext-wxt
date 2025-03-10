@@ -1,3 +1,6 @@
+import { storageManager } from '../utils/storageManager';
+import { Driver } from '../utils/types';
+
 export default defineContentScript({
   matches: ['*://*/*'],
   runAt: "document_start",
@@ -8,7 +11,7 @@ export default defineContentScript({
     });
     console.log('Done!');
 
-    // Listen for custom events from the fetch interceptor
+   // save orders to localStorage
     window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Orders data received:', customEvent.detail?.orders);
@@ -24,45 +27,39 @@ export default defineContentScript({
       }
     });
 
-    interface Driver {
-      domiciles?: any;
-      [key: string]: any;
-    }
-    
+    // save drivers to storageManager only
     window.addEventListener('pat-drivers', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('Drivers data received:', customEvent.detail?.drivers);
       
-      // Save drivers data to storage
+      // Save drivers data to storage and update manager
       if (customEvent.detail?.drivers && Array.isArray(customEvent.detail.drivers)) {
         try {
           // Create a safe copy of the drivers array and remove domiciles
           const sanitizedDrivers = customEvent.detail.drivers.map((driver: Driver) => {
-            // Create a new object without the domiciles property
             const { domiciles, ...driverWithoutDomiciles } = driver;
             return driverWithoutDomiciles;
           });
           
-          await storage.setItem('local:drivers', sanitizedDrivers);
+          storageManager.updateDrivers(sanitizedDrivers);
           console.log('Drivers data saved to storage successfully');
         } catch (err) {
           console.error("Error saving drivers data to storage:", err);
         }
       }
     });
-
-
+    // save workOpportunities to storageManager only
     window.addEventListener('pat-workOpportunities', async (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('workOpportunities data received:', customEvent.detail?.workOpportunities);
       
-      // Save drivers data to storage
+      // Update opportunities in storage manager only
       if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
         try {
-          await storage.setItem('local:workOpportunities', customEvent.detail?.workOpportunities);
-          console.log('pat-workOpportunities data saved to storage successfully');
+          storageManager.updateOpportunities(customEvent.detail.workOpportunities);
+          console.log('Work opportunities updated in storage manager successfully');
         } catch (err) {
-          console.error("Error saving pat-workOpportunities data to storage:", err);
+          console.error("Error updating work opportunities:", err);
         }
       }
     });

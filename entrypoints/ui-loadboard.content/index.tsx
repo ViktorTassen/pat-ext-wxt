@@ -33,7 +33,7 @@ function waitForElm(selector: string): Promise<HTMLElement> {
 }
 
 export default defineContentScript({
-  matches: ['*://relay.amazon.com/loadboard*'],
+  matches: ['*://relay.amazon.com/loadboard/search*'],
 
   main(ctx) {
     // Create the load card UI
