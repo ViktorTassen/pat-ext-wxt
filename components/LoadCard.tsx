@@ -13,28 +13,18 @@ import {
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import LoadboardTextField from './LoadboardTextField';
-import { useOpportunity } from '../utils/OpportunityContext';
 
 interface LoadCardProps {
   workOpportunityId: string;
 }
 
 export function LoadCard({ workOpportunityId }: LoadCardProps) {
-  const { opportunities, drivers } = useOpportunity();
   const [workOpportunity, setWorkOpportunity] = useState<any>(null);
   const [minPayout, setMinPayout] = useState<string>('');
   const [pricePerDistance, setPricePerDistance] = useState<string>('');
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    const opportunity = opportunities.find(opp => opp.id === workOpportunityId);
-    if (opportunity) {
-      setWorkOpportunity(opportunity);
-      setMinPayout(opportunity.totalCost?.value?.toString() || '');
-      setPricePerDistance(opportunity.costPerDistance?.value?.toString() || '');
-    }
-  }, [opportunities, workOpportunityId]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);

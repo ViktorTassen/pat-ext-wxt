@@ -10,6 +10,10 @@ export default defineContentScript({
     });
     console.log('Done!');
 
+
+    let drivers: any;
+    let workOpps: any;
+
     // save orders to localStorage
     window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -37,11 +41,7 @@ export default defineContentScript({
           
           await storage.setItem('local:drivers', sanitizedDrivers);
           
-          // Dispatch event for React components
-          window.dispatchEvent(new CustomEvent('driversUpdated', {
-            detail: { drivers: sanitizedDrivers }
-          }));
-          
+          drivers = sanitizedDrivers;
           console.log('Drivers data saved successfully');
         } catch (err) {
           console.error("Error saving drivers data:", err);
@@ -52,11 +52,8 @@ export default defineContentScript({
     // Dispatch work opportunities update event
     window.addEventListener('pat-workOpportunities', (event: Event) => {
       const customEvent = event as CustomEvent;
-      
       if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
-        window.dispatchEvent(new CustomEvent('opportunitiesUpdated', {
-          detail: { opportunities: customEvent.detail.workOpportunities }
-        }));
+        workOpps = customEvent.detail.workOpportunities;
       }
     });
   },
