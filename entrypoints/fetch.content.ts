@@ -11,8 +11,6 @@ export default defineContentScript({
     console.log('Done!');
 
 
-    let workOpps: any;
-
     // save orders to localStorage
     window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -46,12 +44,5 @@ export default defineContentScript({
       }
     });
 
-    // Dispatch work opportunities update event
-    window.addEventListener('pat-workOpportunities', (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
-        workOpps = customEvent.detail.workOpportunities;
-      }
-    });
   },
 });

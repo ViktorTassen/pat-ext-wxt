@@ -12,5 +12,15 @@ export default defineUnlistedScript(() => {
     });
   });
 
-
+  // Listen for post truck requests
+  window.addEventListener('pat-postTruck', async (event) => {
+    console.log('Received post truck request', event.detail);
+    // TODO: Implement actual API call to post truck
+    // For now, just log the request
+    const { workOpportunityId, minPayout } = event.detail;
+    console.log(`Would post truck for work opportunity ${workOpportunityId} with min payout $${minPayout}`);
+    
+    // Simulate successful processing
+    // This should be replaced with actual API implementation
+  });
 });

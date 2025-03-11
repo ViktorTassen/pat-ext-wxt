@@ -14,20 +14,30 @@ const emotionCache = createCache({
 export default defineContentScript({
   matches: ['*://relay.amazon.com/loadboard*'],
   main(ctx) {
-    // Keep track of active observers and timeouts
-    const activeObservers = new Map<string, { observer: MutationObserver, timeoutId: number }>();
+    // Keep track of active observers
+    const activeObservers = new Map<string, MutationObserver>();
+    const processedIds = new Set<string>();
     
     function createLoadCardUi(anchor: HTMLElement, workOpportunity: any) {
+      // Find the appropriate parent element to inject our UI
+      // Look for the first parent with display flex that contains our target element
+      let targetElement = anchor;
+      let parentElement = anchor.parentElement;
+    
+      
+      
       return createIntegratedUi(ctx, {
         position: 'inline',
-        anchor,
+        anchor: parentElement,
         onMount: (container) => {
           const LoadCardContainer = document.createElement('span');
+          LoadCardContainer.style.marginLeft = '8px'; // Add some spacing
+          
           const root = createRoot(LoadCardContainer);
           root.render(
             <ThemeProvider theme={theme}>
               <CacheProvider value={emotionCache}>
-                  <LoadCard workOpportunityId={anchor.id} workOpportunity={workOpportunity} />
+                <LoadCard workOpportunityId={anchor.id} workOpportunity={workOpportunity} />
               </CacheProvider>
             </ThemeProvider>
           );
@@ -42,31 +52,21 @@ export default defineContentScript({
     }
 
     // Function to wait for an element using MutationObserver with timeout
-    function waitForElement(id: string, timeout = 5000): Promise<HTMLElement | null> {
-      const selector = "#" + id;
-      
-      // Clean up any existing observer for this ID
-      cleanupObserver(id);
-      
+    function waitForElementWithId(id: string): Promise<HTMLElement | null> {
       return new Promise((resolve) => {
         // Check if element already exists
-        const element = document.querySelector(selector) as HTMLElement;
+        const element = document.getElementById(id) as HTMLElement;
         if (element) {
           resolve(element);
           return;
         }
         
-        // Create timeout to prevent memory leaks
-        const timeoutId = window.setTimeout(() => {
-          cleanupObserver(id);
-          resolve(null); // Return null if element is not found within timeout
-        }, timeout);
-        
         // Set up observer to watch for new elements
-        const observer = new MutationObserver((mutations, obs) => {
-          const element = document.querySelector(selector) as HTMLElement;
+        const observer = new MutationObserver(() => {
+          const element = document.getElementById(id) as HTMLElement;
           if (element) {
-            cleanupObserver(id);
+            observer.disconnect();
+            activeObservers.delete(id);
             resolve(element);
           }
         });
@@ -77,57 +77,45 @@ export default defineContentScript({
           subtree: true
         });
         
-        // Store the observer and timeout reference
-        activeObservers.set(id, { observer, timeoutId });
+        // Store the observer reference
+        activeObservers.set(id, observer);
+        
+        // Set a timeout to prevent indefinite waiting
+        setTimeout(() => {
+          if (activeObservers.has(id)) {
+            observer.disconnect();
+            activeObservers.delete(id);
+            resolve(null);
+          }
+        }, 5000);
       });
     }
     
-    // Helper function to clean up observer and timeout
-    function cleanupObserver(id: string) {
-      const observerData = activeObservers.get(id);
-      if (observerData) {
-        const { observer, timeoutId } = observerData;
-        observer.disconnect();
-        clearTimeout(timeoutId);
-        activeObservers.delete(id);
-      }
-    }
-    
-    // Clean up all observers and timeouts
-    function cleanupAllObservers() {
-      activeObservers.forEach(({ observer, timeoutId }) => {
-        observer.disconnect();
-        clearTimeout(timeoutId);
-      });
-      activeObservers.clear();
-    }
-    
-    function gogogo() {
-      const processedIds = new Set<string>();
-      
+    // Initialize load cards from work opportunities
+    function initializeLoadCards() {
       // Listen for workOpportunities event
       window.addEventListener('pat-workOpportunities', (event: Event) => {
         const customEvent = event as CustomEvent;
         if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
-          // Clean up existing observers when new data arrives
-          cleanupAllObservers();
-          
           const workOpps = customEvent.detail.workOpportunities;
+          
+          // Clear processedIds when we get new work opportunities
+          // This allows us to reprocess everything when the table refreshes
+          processedIds.clear();
           
           // Process each work opportunity
           workOpps.forEach((workOpportunity: any) => {
             const id = workOpportunity.id;
             
-            // Skip if already processed
-            if (processedIds.has(id)) return;
-            
             // Wait for element and create UI
-            waitForElement(id).then(anchor => {
+            waitForElementWithId(id).then(anchor => {
               if (anchor && !anchor.getAttribute("data-loadcard-initialized")) {
                 anchor.setAttribute("data-loadcard-initialized", "true");
                 processedIds.add(id);
                 const loadCardUi = createLoadCardUi(anchor, workOpportunity);
-                loadCardUi.mount();
+                if (loadCardUi) {
+                  loadCardUi.mount();
+                }
               }
             });
           });
@@ -136,6 +124,13 @@ export default defineContentScript({
     }
     
     // Start the process
-    gogogo();
+    initializeLoadCards();
+    
+    // Clean up when context is invalidated
+    ctx.onInvalidated(() => {
+      // Clean up all observers
+      activeObservers.forEach(observer => observer.disconnect());
+      activeObservers.clear();
+    });
   },
 });

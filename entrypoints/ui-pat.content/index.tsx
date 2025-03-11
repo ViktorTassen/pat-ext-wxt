@@ -1,4 +1,4 @@
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { OrderCheckbox } from '@/components/OrderCheckbox';
 import { OrderManagement } from '@/components/OrderManagement';
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -8,17 +8,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from '../../utils/theme';
 import './style.css';
 
-
-
-
 export default defineContentScript({
   matches: ['*://relay.amazon.com/*'],
-
-
+  
   async main(ctx) {
-
-    
-    // create UI
+    // Create the management UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
       anchor: '#show-order-table',
@@ -38,7 +32,6 @@ export default defineContentScript({
         return root;
       },
       onRemove: (root) => {
-        // Unmount the root when the UI is removed
         root?.unmount();
       },
     });
@@ -60,24 +53,31 @@ export default defineContentScript({
           return root;
         },
         onRemove: (root) => {
-          // Unmount the root when the UI is removed
           root?.unmount();
         },
       });
     }
     
+    // Process existing order ID elements
+    function processOrderIdElements() {
+      const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
+      for (const element of orderIdElements) {
+        element.setAttribute("data-checkbox-initialized", "true");
+        const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
+        checkboxUi.mount();
+      }
+    }
+    
     // Observe the order ID elements and create the checkboxes
     function observeOrderIdElements() {
+      // Process existing elements first
+      processOrderIdElements();
+      
+      // Set up observer for future elements
       const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (!mutation.addedNodes.length) continue;
-
-          const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
-          for (const element of orderIdElements) {
-            element.setAttribute("data-checkbox-initialized", "true");
-            const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
-            checkboxUi.mount();
-          }
+          processOrderIdElements();
         }
       });
     
@@ -85,12 +85,15 @@ export default defineContentScript({
         childList: true,
         subtree: true,
       });
-    };
+      
+      // Clean up when context is invalidated
+      ctx.onInvalidated(() => {
+        observer.disconnect();
+      });
+    }
 
     observeOrderIdElements();
     ui.autoMount();
   },
-
-  
 });
 
