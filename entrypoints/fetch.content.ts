@@ -1,4 +1,3 @@
-import { storageManager } from '../utils/storageManager';
 import { Driver } from '../utils/types';
 
 export default defineContentScript({
@@ -14,9 +13,7 @@ export default defineContentScript({
     // save orders to localStorage
     window.addEventListener('pat-orders', async (event: Event) => {
       const customEvent = event as CustomEvent;
-      console.log('Orders data received:', customEvent.detail?.orders);
       
-      // Save orders data to storage
       if (customEvent.detail?.orders) {
         try {
           await storage.setItem('local:orders', customEvent.detail.orders);
@@ -27,40 +24,39 @@ export default defineContentScript({
       }
     });
 
-    // save drivers to storageManager only
+    // save drivers to storage
     window.addEventListener('pat-drivers', async (event: Event) => {
       const customEvent = event as CustomEvent;
-      console.log('Drivers data received:', customEvent.detail?.drivers);
       
-      // Save drivers data to storage and update manager
       if (customEvent.detail?.drivers && Array.isArray(customEvent.detail.drivers)) {
         try {
-          // Create a safe copy of the drivers array and remove domiciles
           const sanitizedDrivers = customEvent.detail.drivers.map((driver: Driver) => {
             const { domiciles, ...driverWithoutDomiciles } = driver;
             return driverWithoutDomiciles;
           });
           
-          storageManager.updateDrivers(sanitizedDrivers);
-          console.log('Drivers data saved to storage successfully');
+          await storage.setItem('local:drivers', sanitizedDrivers);
+          
+          // Dispatch event for React components
+          window.dispatchEvent(new CustomEvent('driversUpdated', {
+            detail: { drivers: sanitizedDrivers }
+          }));
+          
+          console.log('Drivers data saved successfully');
         } catch (err) {
-          console.error("Error saving drivers data to storage:", err);
+          console.error("Error saving drivers data:", err);
         }
       }
     });
 
-    // Update workOpportunities in storageManager only (no local storage)
-    window.addEventListener('pat-workOpportunities', async (event: Event) => {
+    // Dispatch work opportunities update event
+    window.addEventListener('pat-workOpportunities', (event: Event) => {
       const customEvent = event as CustomEvent;
       
       if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
-        try {
-          console.log('Updating work opportunities in storage manager...', customEvent.detail.workOpportunities);
-          storageManager.updateOpportunities(customEvent.detail.workOpportunities);
-          console.log('Work opportunities updated in storage manager successfully');
-        } catch (err) {
-          console.error("Error updating work opportunities:", err);
-        }
+        window.dispatchEvent(new CustomEvent('opportunitiesUpdated', {
+          detail: { opportunities: customEvent.detail.workOpportunities }
+        }));
       }
     });
   },

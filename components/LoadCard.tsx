@@ -13,58 +13,28 @@ import {
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import LoadboardTextField from './LoadboardTextField';
-import { storageManager } from '../utils/storageManager';
-import type { Driver } from '../utils/types';
+import { useOpportunity } from '../utils/OpportunityContext';
 
 interface LoadCardProps {
   workOpportunityId: string;
 }
 
 export function LoadCard({ workOpportunityId }: LoadCardProps) {
+  const { opportunities, drivers } = useOpportunity();
   const [workOpportunity, setWorkOpportunity] = useState<any>(null);
   const [minPayout, setMinPayout] = useState<string>('');
   const [pricePerDistance, setPricePerDistance] = useState<string>('');
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
 
   useEffect(() => {
-    // Get work opportunity data from storageManager
-    const opportunities = storageManager.getOpportunities();
-    console.log('Opportunities:', opportunities);
-
     const opportunity = opportunities.find(opp => opp.id === workOpportunityId);
-
-    console.log('Work Opportunity:', opportunity);
-    
     if (opportunity) {
       setWorkOpportunity(opportunity);
-      // Prefill the fields
       setMinPayout(opportunity.totalCost?.value?.toString() || '');
       setPricePerDistance(opportunity.costPerDistance?.value?.toString() || '');
     }
-    
-    // Get drivers from storageManager
-    const availableDrivers = storageManager.getDrivers();
-    setDrivers(availableDrivers);
-
-    // Subscribe to storageManager updates
-    const unsubscribe = storageManager.subscribe(() => {
-      const updatedOpportunities = storageManager.getOpportunities();
-      const updatedOpportunity = updatedOpportunities.find(opp => opp.id === workOpportunityId);
-      if (updatedOpportunity) {
-        setWorkOpportunity(updatedOpportunity);
-        setMinPayout(updatedOpportunity.totalCost?.value?.toString() || '');
-        setPricePerDistance(updatedOpportunity.costPerDistance?.value?.toString() || '');
-      }
-      
-      const updatedDrivers = storageManager.getDrivers();
-      setDrivers(updatedDrivers);
-    });
-
-    // Cleanup subscription
-    return () => unsubscribe();
-  }, [workOpportunityId]);
+  }, [opportunities, workOpportunityId]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
