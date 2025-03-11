@@ -1,29 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Box, 
-  Button, 
-  FormControl, 
-  InputLabel, 
-  MenuItem, 
-  Select, 
-  SelectChangeEvent,
-  IconButton,
-  Popover,
-  Typography
+  Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent,
+  IconButton, Popover, Typography
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import LoadboardTextField from './LoadboardTextField';
+import { useWorkOpportunities } from '../utils/WorkOpportunitiesContext';
 
 interface LoadCardProps {
   workOpportunityId: string;
 }
 
 export function LoadCard({ workOpportunityId }: LoadCardProps) {
-  const [workOpportunity, setWorkOpportunity] = useState<any>(null);
+  const { getWorkOpportunityById } = useWorkOpportunities();
+  const workOpportunity = getWorkOpportunityById(workOpportunityId);
+  
   const [minPayout, setMinPayout] = useState<string>('');
   const [pricePerDistance, setPricePerDistance] = useState<string>('');
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [drivers, setDrivers] = useState<{ latestTransientDriverId: string; firstName: string; lastName: string }[]>([]);
 
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
