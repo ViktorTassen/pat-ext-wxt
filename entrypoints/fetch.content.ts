@@ -55,6 +55,7 @@ export default defineContentScript({
       
       if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
         try {
+          console.log('Updating work opportunities in storage manager...', customEvent.detail.workOpportunities);
           storageManager.updateOpportunities(customEvent.detail.workOpportunities);
           console.log('Work opportunities updated in storage manager successfully');
         } catch (err) {

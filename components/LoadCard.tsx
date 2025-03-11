@@ -29,24 +29,41 @@ export function LoadCard({ workOpportunityId }: LoadCardProps) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
 
   useEffect(() => {
-    // Initialize storageManager if not already initialized
-    storageManager.init().then(() => {
-      // Get work opportunity data
-      const opportunities = storageManager.getOpportunities();
-      const opportunity = opportunities.find(opp => opp.id === workOpportunityId);
-      console.log('opportunities:', opportunities);
-      console.log('Opportunity:', opportunity);
-      if (opportunity) {
-        setWorkOpportunity(opportunity);
-        // Prefill the fields
-        setMinPayout(opportunity.totalCost?.value?.toString() || '');
-        setPricePerDistance(opportunity.costPerDistance?.value?.toString() || '');
+    // Get work opportunity data from storageManager
+    const opportunities = storageManager.getOpportunities();
+    console.log('Opportunities:', opportunities);
+
+    const opportunity = opportunities.find(opp => opp.id === workOpportunityId);
+
+    console.log('Work Opportunity:', opportunity);
+    
+    if (opportunity) {
+      setWorkOpportunity(opportunity);
+      // Prefill the fields
+      setMinPayout(opportunity.totalCost?.value?.toString() || '');
+      setPricePerDistance(opportunity.costPerDistance?.value?.toString() || '');
+    }
+    
+    // Get drivers from storageManager
+    const availableDrivers = storageManager.getDrivers();
+    setDrivers(availableDrivers);
+
+    // Subscribe to storageManager updates
+    const unsubscribe = storageManager.subscribe(() => {
+      const updatedOpportunities = storageManager.getOpportunities();
+      const updatedOpportunity = updatedOpportunities.find(opp => opp.id === workOpportunityId);
+      if (updatedOpportunity) {
+        setWorkOpportunity(updatedOpportunity);
+        setMinPayout(updatedOpportunity.totalCost?.value?.toString() || '');
+        setPricePerDistance(updatedOpportunity.costPerDistance?.value?.toString() || '');
       }
       
-      // Get drivers
-      const availableDrivers = storageManager.getDrivers();
-      setDrivers(availableDrivers);
+      const updatedDrivers = storageManager.getDrivers();
+      setDrivers(updatedDrivers);
     });
+
+    // Cleanup subscription
+    return () => unsubscribe();
   }, [workOpportunityId]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
