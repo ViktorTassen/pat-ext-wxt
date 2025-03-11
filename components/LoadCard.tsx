@@ -34,6 +34,8 @@ export function LoadCard({ workOpportunityId }: LoadCardProps) {
       // Get work opportunity data
       const opportunities = storageManager.getOpportunities();
       const opportunity = opportunities.find(opp => opp.id === workOpportunityId);
+      console.log('opportunities:', opportunities);
+      console.log('Opportunity:', opportunity);
       if (opportunity) {
         setWorkOpportunity(opportunity);
         // Prefill the fields

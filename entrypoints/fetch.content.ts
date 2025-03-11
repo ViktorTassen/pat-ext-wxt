@@ -48,12 +48,11 @@ export default defineContentScript({
         }
       }
     });
-    // save workOpportunities to storageManager only
+
+    // Update workOpportunities in storageManager only (no local storage)
     window.addEventListener('pat-workOpportunities', async (event: Event) => {
       const customEvent = event as CustomEvent;
-      // console.log('workOpportunities data received:', customEvent.detail?.workOpportunities);
       
-      // Update opportunities in storage manager only
       if (customEvent.detail?.workOpportunities && Array.isArray(customEvent.detail.workOpportunities)) {
         try {
           storageManager.updateOpportunities(customEvent.detail.workOpportunities);

@@ -22,12 +22,8 @@ class StorageManager {
     if (this.initialized) return;
     
     try {
-      const [loadedOpportunities, loadedDrivers] = await Promise.all([
-        storage.getItem('local:workOpportunities') as Promise<any[]>,
-        storage.getItem('local:drivers') as Promise<Driver[]>
-      ]);
-      
-      this.opportunities = loadedOpportunities || [];
+      // Only load drivers from storage, opportunities are managed in memory
+      const loadedDrivers = await storage.getItem('local:drivers') as Driver[];
       this.drivers = (loadedDrivers || []).filter(driver => driver.status === 'active');
       this.initialized = true;
       this.notifyListeners();

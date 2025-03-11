@@ -11,7 +11,7 @@ export default defineConfig({
     permissions: ['storage', 'declarativeNetRequest'],
     web_accessible_resources: [
       {
-        resources: ["fetch-driver-main-world.js","fetch-main-world.js", "actions-main-world.js"],
+        resources: ["fetch-main-world.js", "actions-main-world.js"],
         matches: ["*://*/*"],
       }
     ]
