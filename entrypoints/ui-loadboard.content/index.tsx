@@ -5,7 +5,6 @@ import createCache from '@emotion/cache';
 import './style.css';
 import { theme } from '../../utils/theme';
 import { LoadCard } from '../../components/LoadCard';
-import { WorkOpportunitiesProvider } from '@/utils/WorkOpportunitiesContext';
 
 // Create a shared cache for Emotion
 const emotionCache = createCache({
@@ -26,9 +25,7 @@ export default defineContentScript({
           root.render(
             <ThemeProvider theme={theme}>
               <CacheProvider value={emotionCache}>
-                <WorkOpportunitiesProvider>
                 <LoadCard workOpportunityId={anchor.id} />
-                </WorkOpportunitiesProvider>
               </CacheProvider>
             </ThemeProvider>
           );
