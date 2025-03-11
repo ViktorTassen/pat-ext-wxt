@@ -17,7 +17,7 @@ export default defineContentScript({
     // Keep track of active observers and timeouts
     const activeObservers = new Map<string, { observer: MutationObserver, timeoutId: number }>();
     
-    function createLoadCardUi(anchor: HTMLElement) {
+    function createLoadCardUi(anchor: HTMLElement, workOpportunity: any) {
       return createIntegratedUi(ctx, {
         position: 'inline',
         anchor,
@@ -27,7 +27,7 @@ export default defineContentScript({
           root.render(
             <ThemeProvider theme={theme}>
               <CacheProvider value={emotionCache}>
-                  <LoadCard workOpportunityId={anchor.id} />
+                  <LoadCard workOpportunityId={anchor.id} workOpportunity={workOpportunity} />
               </CacheProvider>
             </ThemeProvider>
           );
@@ -126,7 +126,7 @@ export default defineContentScript({
               if (anchor && !anchor.getAttribute("data-loadcard-initialized")) {
                 anchor.setAttribute("data-loadcard-initialized", "true");
                 processedIds.add(id);
-                const loadCardUi = createLoadCardUi(anchor);
+                const loadCardUi = createLoadCardUi(anchor, workOpportunity);
                 loadCardUi.mount();
               }
             });
