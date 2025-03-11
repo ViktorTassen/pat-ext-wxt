@@ -11,7 +11,6 @@ export default defineContentScript({
     console.log('Done!');
 
 
-    let drivers: any;
     let workOpps: any;
 
     // save orders to localStorage
@@ -40,8 +39,6 @@ export default defineContentScript({
           });
           
           await storage.setItem('local:drivers', sanitizedDrivers);
-          
-          drivers = sanitizedDrivers;
           console.log('Drivers data saved successfully');
         } catch (err) {
           console.error("Error saving drivers data:", err);
