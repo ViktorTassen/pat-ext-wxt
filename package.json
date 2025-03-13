@@ -23,6 +23,7 @@
     "@mui/x-date-pickers": "^6.20.2",
     "clsx": "^2.1.0",
     "dayjs": "^1.11.10",
+    "firebase": "^11.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.2.1"

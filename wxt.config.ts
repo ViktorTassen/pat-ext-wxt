@@ -8,7 +8,7 @@ export default defineConfig({
     disabled: true,
   }),
   manifest: {
-    permissions: ['storage', 'declarativeNetRequest'],
+    permissions: ['storage', 'declarativeNetRequest', 'tabs', 'offscreen'],
     web_accessible_resources: [
       {
         resources: ["fetch-main-world.js", "actions-main-world.js"],
