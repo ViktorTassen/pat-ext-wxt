@@ -1,15 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from '@mui/material/styles';
-import { CacheProvider } from '@emotion/react';
-import createCache from '@emotion/cache';
 import './style.css';
 import { theme } from '../../utils/theme';
 import { LoadCard } from '../../components/LoadCard';
-
-// Create a shared cache for Emotion
-const emotionCache = createCache({
-  key: 'pat',
-});
   
 export default defineContentScript({
   matches: ['*://relay.amazon.com/loadboard*'],
@@ -36,9 +29,7 @@ export default defineContentScript({
           const root = createRoot(LoadCardContainer);
           root.render(
             <ThemeProvider theme={theme}>
-              <CacheProvider value={emotionCache}>
-                <LoadCard workOpportunityId={anchor.id} workOpportunity={workOpportunity} />
-              </CacheProvider>
+              <LoadCard workOpportunityId={anchor.id} workOpportunity={workOpportunity} />
             </ThemeProvider>
           );
           

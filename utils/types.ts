@@ -38,6 +38,11 @@ export interface Order {
   };
   driverTypes: string[];
   supplyTransientDriverIdList: string[];
+  visibleProvidedTrailerType?: string;
+  providedTrailerType?: string;
+  visibleEquipmentTypes?: string;
+  equipmentTypes?: string[];
+  loadingTypeList?: string[];
 }
 
 export interface OrderChanges {

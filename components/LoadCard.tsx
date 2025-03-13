@@ -106,18 +106,42 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
       distanceUnit: workOpportunity.totalDistance?.unit || 'miles',
       stemTime: parseInt(stemTime),
       selectedDriverIds: selectedDriverIds.length > 0 ? selectedDriverIds : null,
-      action: 'postTruck'
+      action: 'postTruck',
+      workOpportunity  // Pass the entire workOpportunity object
     };
+    
+    // Set up event listeners for success and error responses
+    const handleSuccess = (e: CustomEvent) => {
+      console.log('Order created successfully', e.detail);
+      setIsLoading(false);
+      handleClose();
+      window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+      window.removeEventListener('pat-postTruckError', handleError as EventListener);
+    };
+    
+    const handleError = (e: CustomEvent) => {
+      console.error('Error creating order:', e.detail.error);
+      setIsLoading(false);
+      window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+      window.removeEventListener('pat-postTruckError', handleError as EventListener);
+    };
+    
+    // Add event listeners
+    window.addEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+    window.addEventListener('pat-postTruckError', handleError as EventListener);
     
     // Create and dispatch the event
     const event = new CustomEvent('pat-postTruck', { detail });
     window.dispatchEvent(event);
     
-    // Simulate completion (replace with real callback handling)
+    // Set a timeout to prevent UI from being stuck if no response is received
     setTimeout(() => {
-      setIsLoading(false);
-      handleClose();
-    }, 1000);
+      if (isLoading) {
+        setIsLoading(false);
+        window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+        window.removeEventListener('pat-postTruckError', handleError as EventListener);
+      }
+    }, 5000); // 5 seconds timeout
   };
 
   // Get currency symbol based on currency code
@@ -192,7 +216,7 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
       >
         <Box sx={{ p: 2, width: 300 }}>
           <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-            Post Truck Settings
+            Create order
           </Typography>
           
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -354,7 +378,7 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
               fontSize: '0.875rem',
             }}
           >
-            {isLoading ? 'Posting...' : 'Post Truck'}
+            {isLoading ? 'Posting...' : 'Submit'}
           </Button>
         </Box>
       </Popover>

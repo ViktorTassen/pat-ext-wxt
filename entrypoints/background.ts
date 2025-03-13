@@ -15,18 +15,18 @@ const updateDynamicRules = async (newRules = []) => {
 // Add dynamic rules to block similar trips
 const addNewRules = () => {
   const newRules = [
-    {
-      id: 1,
-      priority: 1,
-      action: { type: "block" },
-      condition: { urlFilter: "similar" },
-    },
-    {
-      id: 2,
-      priority: 1,
-      action: { type: "block" },
-      condition: { urlFilter: "recommendations" },
-    },
+    // {
+    //   id: 1,
+    //   priority: 1,
+    //   action: { type: "block" },
+    //   condition: { urlFilter: "similar" },
+    // },
+    // {
+    //   id: 2,
+    //   priority: 1,
+    //   action: { type: "block" },
+    //   condition: { urlFilter: "recommendations" },
+    // },
     {
       id: 3,
       priority: 1,
