@@ -1,7 +1,19 @@
 import { Driver } from '../utils/types';
 
 export default defineContentScript({
-  matches: ['https://relay.amazon.com/loadboard/*'],
+  matches: [
+    "https://relay.amazon.com/*",
+    "https://relay.amazon.co.uk/*",
+    "https://relay.amazon.de/*",
+    "https://relay.amazon.es/*",
+    "https://relay.amazon.ca/*",
+    "https://relay.amazon.fr/*",
+    "https://relay.amazon.it/*",
+    "https://relay.amazon.pl/*",
+    "https://relay.amazon.in/*",
+    "https://relay.amazon.cz/*",
+    "https://relay.amazon.co.jp/*"
+  ],
   runAt: "document_start",
   async main() {
     console.log('Injecting script fetch-main-world...');

@@ -12,7 +12,19 @@ export default defineConfig({
     web_accessible_resources: [
       {
         resources: ["fetch-main-world.js", "actions-main-world.js"],
-        matches: ["*://*/*"],
+        matches: [
+          "*://relay.amazon.com/*",
+          "*://relay.amazon.co.uk/*",
+          "*://relay.amazon.de/*",
+          "*://relay.amazon.es/*",
+          "*://relay.amazon.ca/*",
+          "*://relay.amazon.fr/*",
+          "*://relay.amazon.it/*",
+          "*://relay.amazon.pl/*",
+          "*://relay.amazon.in/*",
+          "*://relay.amazon.cz/*",
+          "*://relay.amazon.co.jp/*"
+        ],
       }
     ]
   },

@@ -14,7 +14,11 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 /* Hide Amazon checkboxes */ 
+.css-1svvasb {
+  display: none !important;
+}
 
-/* label:has([role="checkbox"]) {
+/* Alternative selector if needed
+label:has([role="checkbox"]) {
   display: none;
 } */

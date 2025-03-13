@@ -87,6 +87,8 @@ class OrderService {
     minPricePerDistance: number;
     distanceUnit: string;
     stemTime: number;
+    originRadius: number;
+    destinationRadius: number;
     selectedDriverIds: string[] | null;
   }) {
     // Extract locations from the work opportunity
@@ -140,14 +142,14 @@ class OrderService {
         uniqueKey: `${origin.latitude}${origin.city}, ${origin.state}`
       },
       originCityRadius: {
-        value: 25,
+        value: options.originRadius || 25, // Ensure it always has a value, default to 25 if not provided
         unit: options.distanceUnit === "miles" || options.distanceUnit === "mi" ? "mi" : "km"
       },
       destinationCityInfo: null,
       isAnywhereDestination: false,
       destinationCityInfoForFilter: null,
       destinationCityRadius: {
-        value: 25,
+        value: options.destinationRadius || 25, // Ensure it always has a value, default to 25 if not provided
         unit: options.distanceUnit === "miles" || options.distanceUnit === "mi" ? "mi" : "km"
       },
       startTime: new Date(new Date(workOpportunity.firstPickupTime).getTime() - 60 * 1000).toISOString(), // 1 minute before

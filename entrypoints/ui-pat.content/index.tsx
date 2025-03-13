@@ -9,9 +9,23 @@ import { theme } from '../../utils/theme';
 import './style.css';
 
 export default defineContentScript({
-  matches: ['*://relay.amazon.com/*'],
+  matches: [
+    "*://relay.amazon.com/loadboard/orders?state*",
+    "*://relay.amazon.co.uk/loadboard/orders?state*",
+    "*://relay.amazon.de/loadboard/orders?state*",
+    "*://relay.amazon.es/loadboard/orders?state*",
+    "*://relay.amazon.ca/loadboard/orders?state*",
+    "*://relay.amazon.fr/loadboard/orders?state*",
+    "*://relay.amazon.it/loadboard/orders?state*",
+    "*://relay.amazon.pl/loadboard/orders?state*",
+    "*://relay.amazon.in/loadboard/orders?state*",
+    "*://relay.amazon.cz/loadboard/orders?state*",
+    "*://relay.amazon.co.jp/loadboard/orders?state*"
+  ],
   
   async main(ctx) {
+    // Track all created UI components for cleanup
+    const createdCheckboxUis = new Set<any>();
     // Create the management UI
     const ui = createIntegratedUi(ctx, {
       position: 'inline',
@@ -38,7 +52,7 @@ export default defineContentScript({
 
     // Create the checkbox UI
     function createCheckboxUi(anchor: HTMLElement, orderId: string) {
-      return createIntegratedUi(ctx, {
+      const checkboxUi = createIntegratedUi(ctx, {
         position: 'inline',
         anchor,
         onMount: (container) => {
@@ -56,6 +70,10 @@ export default defineContentScript({
           root?.unmount();
         },
       });
+      
+      // Track UI for cleanup
+      createdCheckboxUis.add(checkboxUi);
+      return checkboxUi;
     }
     
     // Process existing order ID elements
@@ -89,6 +107,18 @@ export default defineContentScript({
       // Clean up when context is invalidated
       ctx.onInvalidated(() => {
         observer.disconnect();
+        
+        // Clean up all checkbox UIs
+        createdCheckboxUis.forEach(ui => {
+          try {
+            if (ui && typeof ui.unmount === 'function') {
+              ui.unmount();
+            }
+          } catch (e) {
+            console.error('Error unmounting checkbox UI:', e);
+          }
+        });
+        createdCheckboxUis.clear();
       });
     }
 

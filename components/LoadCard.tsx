@@ -19,6 +19,7 @@ import LoadboardSelect from './LoadboardSelect';
 
 // Constants from OrderManagement component
 const STEM_TIME_OPTIONS = ["5", "15", "30", "45", "60", "90", "120", "150", "180", "210", "240", "480", "720", "1440"];
+const RADIUS_OPTIONS = ["5", "10", "15", "20", "25", "50", "75", "100"];
 
 const formatStemTime = (minutes: string): string => {
   const mins = parseInt(minutes, 10);
@@ -46,6 +47,8 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
   const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
   const [stemTime, setStemTime] = useState<string>("60"); // Default to 60 minutes
+  const [originRadius, setOriginRadius] = useState<string>("25"); // Default to 25 miles/km
+  const [destinationRadius, setDestinationRadius] = useState<string>("25"); // Default to 25 miles/km
   const [isLoading, setIsLoading] = useState(false);
   
   // Calculate current price per distance
@@ -98,6 +101,42 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
   const handlePostTruck = () => {
     setIsLoading(true);
     
+    // Prepare event handlers outside of the main function
+    const handleSuccess = (e: CustomEvent) => {
+      console.log('Order created successfully', e.detail);
+      setIsLoading(false);
+      handleClose();
+    };
+    
+    const handleError = (e: CustomEvent) => {
+      console.error('Error creating order:', e.detail.error);
+      setIsLoading(false);
+    };
+    
+    // Set up listeners and cleanup with useEffect
+    React.useEffect(() => {
+      // Only add listeners when isLoading is true (we've started the process)
+      if (!isLoading) return;
+      
+      // Add event listeners
+      window.addEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+      window.addEventListener('pat-postTruckError', handleError as EventListener);
+      
+      // Set a timeout to prevent UI from being stuck
+      const timeoutId = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+        }
+      }, 5000); // 5 seconds timeout
+      
+      // Cleanup function that runs when the component unmounts or dependencies change
+      return () => {
+        window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+        window.removeEventListener('pat-postTruckError', handleError as EventListener);
+        clearTimeout(timeoutId);
+      };
+    }, [isLoading]); // Re-run this effect when isLoading changes
+    
     // Dispatch custom event for action handler
     const detail = {
       workOpportunityId,
@@ -105,43 +144,16 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
       minPricePerDistance: parseFloat(minPricePerDistance),
       distanceUnit: workOpportunity.totalDistance?.unit || 'miles',
       stemTime: parseInt(stemTime),
+      originRadius: parseInt(originRadius),
+      destinationRadius: parseInt(destinationRadius),
       selectedDriverIds: selectedDriverIds.length > 0 ? selectedDriverIds : null,
       action: 'postTruck',
       workOpportunity  // Pass the entire workOpportunity object
     };
     
-    // Set up event listeners for success and error responses
-    const handleSuccess = (e: CustomEvent) => {
-      console.log('Order created successfully', e.detail);
-      setIsLoading(false);
-      handleClose();
-      window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-      window.removeEventListener('pat-postTruckError', handleError as EventListener);
-    };
-    
-    const handleError = (e: CustomEvent) => {
-      console.error('Error creating order:', e.detail.error);
-      setIsLoading(false);
-      window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-      window.removeEventListener('pat-postTruckError', handleError as EventListener);
-    };
-    
-    // Add event listeners
-    window.addEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-    window.addEventListener('pat-postTruckError', handleError as EventListener);
-    
     // Create and dispatch the event
     const event = new CustomEvent('pat-postTruck', { detail });
     window.dispatchEvent(event);
-    
-    // Set a timeout to prevent UI from being stuck if no response is received
-    setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-        window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-        window.removeEventListener('pat-postTruckError', handleError as EventListener);
-      }
-    }, 5000); // 5 seconds timeout
   };
 
   // Get currency symbol based on currency code
@@ -287,6 +299,69 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
             />
           </Box>
           
+          {/* Origin Row */}
+          <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
+              label="Origin"
+              value={`${workOpportunity.startLocation.city}, ${workOpportunity.startLocation.state}`}
+              disabled
+              sx={{ flexGrow: 1 }}
+            />
+            
+            <FormControl size="small" sx={{ width: '100px' }}>
+              <InputLabel id="origin-radius-label">Radius</InputLabel>
+              <Select
+                labelId="origin-radius-label"
+                value={originRadius}
+                label="Radius"
+                onChange={(e) => {
+                  console.log('Origin radius changed to:', e.target.value);
+                  setOriginRadius(e.target.value);
+                }}
+                sx={{ fontSize: '0.875rem' }}
+              >
+                {RADIUS_OPTIONS.map(option => (
+                  <MenuItem key={option} value={option}>
+                    {option} {workOpportunity.totalDistance?.unit === 'km' ? 'km' : 'mi'}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {/* Destination Row */}
+          <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
+              label="Destination"
+              value={`${workOpportunity.endLocation.city}, ${workOpportunity.endLocation.state}`}
+              disabled
+              sx={{ flexGrow: 1 }}
+            />
+            
+            <FormControl size="small" sx={{ width: '100px' }}>
+              <InputLabel id="destination-radius-label">Radius</InputLabel>
+              <Select
+                labelId="destination-radius-label"
+                value={destinationRadius}
+                label="Radius"
+                onChange={(e) => {
+                  console.log('Destination radius changed to:', e.target.value);
+                  setDestinationRadius(e.target.value);
+                }}
+                sx={{ fontSize: '0.875rem' }}
+              >
+                {RADIUS_OPTIONS.map(option => (
+                  <MenuItem key={option} value={option}>
+                    {option} {workOpportunity.totalDistance?.unit === 'km' ? 'km' : 'mi'}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {/* Stem Time Row */}
           <Box sx={{ mb: 2 }}>
             <LoadboardSelect
               id="stem-time-label"

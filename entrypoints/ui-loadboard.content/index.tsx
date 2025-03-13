@@ -5,8 +5,23 @@ import { theme } from '../../utils/theme';
 import { LoadCard } from '../../components/LoadCard';
   
 export default defineContentScript({
-  matches: ['*://relay.amazon.com/loadboard*'],
+  matches: [
+    "*://relay.amazon.com/loadboard*",
+    "*://relay.amazon.co.uk/loadboard*",
+    "*://relay.amazon.de/loadboard*",
+    "*://relay.amazon.es/loadboard*",
+    "*://relay.amazon.ca/loadboard*",
+    "*://relay.amazon.fr/loadboard*",
+    "*://relay.amazon.it/loadboard*",
+    "*://relay.amazon.pl/loadboard*",
+    "*://relay.amazon.in/loadboard*",
+    "*://relay.amazon.cz/loadboard*",
+    "*://relay.amazon.co.jp/loadboard*"
+  ],
   main(ctx) {
+    // Track all created UI components for proper cleanup
+    const createdUis = new Set<any>();
+    
     // Keep track of active observers
     const activeObservers = new Map<string, MutationObserver>();
     const processedIds = new Set<string>();
@@ -19,7 +34,7 @@ export default defineContentScript({
     
       
       
-      return createIntegratedUi(ctx, {
+      const ui = createIntegratedUi(ctx, {
         position: 'inline',
         anchor: parentElement,
         onMount: (container) => {
@@ -40,6 +55,10 @@ export default defineContentScript({
           root?.unmount();
         },
       });
+      
+      // Track the UI for cleanup
+      createdUis.add(ui);
+      return ui;
     }
 
     // Function to wait for an element using MutationObserver with timeout
@@ -122,6 +141,21 @@ export default defineContentScript({
       // Clean up all observers
       activeObservers.forEach(observer => observer.disconnect());
       activeObservers.clear();
+      
+      // Clean up all UIs
+      createdUis.forEach(ui => {
+        try {
+          if (ui && typeof ui.unmount === 'function') {
+            ui.unmount();
+          }
+        } catch (e) {
+          console.error('Error unmounting UI:', e);
+        }
+      });
+      createdUis.clear();
+      
+      // Clear processed IDs
+      processedIds.clear();
     });
   },
 });

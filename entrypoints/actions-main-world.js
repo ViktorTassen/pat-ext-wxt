@@ -24,6 +24,8 @@ export default defineUnlistedScript(() => {
         minPricePerDistance, 
         distanceUnit, 
         stemTime,
+        originRadius,
+        destinationRadius,
         selectedDriverIds,
         workOpportunity // Pass the workOpportunity directly from the component
       } = event.detail;
@@ -32,12 +34,24 @@ export default defineUnlistedScript(() => {
         throw new Error(`Work opportunity data not provided`);
       }
       
+      console.log('Creating order with options:', {
+        minPayout, 
+        minPricePerDistance, 
+        distanceUnit, 
+        stemTime, 
+        originRadius, 
+        destinationRadius, 
+        selectedDriverIds
+      });
+      
       // Create the order using orderService
       const result = await orderService.createOrderFromWorkOpportunity(workOpportunity, {
         minPayout,
         minPricePerDistance,
         distanceUnit,
         stemTime,
+        originRadius,
+        destinationRadius,
         selectedDriverIds
       });
       
