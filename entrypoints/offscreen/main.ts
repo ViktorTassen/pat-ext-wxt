@@ -1,82 +1,44 @@
-// Offscreen page for Firebase authentication handling
-const HOSTING_URL = "https://turrex-fb3ca.web.app";
+const HOSTING_URL = "https://pat-web-theta.vercel.app/sign-in-popup";
+let iframe = document.querySelector('iframe#auth-iframe') as HTMLIFrameElement;
 
-// Create and append the iframe as soon as the offscreen document loads
-const iframe = document.createElement('iframe');
-iframe.src = HOSTING_URL;
-// Not hiding the iframe for testing purposes
-document.body.appendChild(iframe);
-
-console.log('PAT Extension Offscreen Page loaded');
-
-// Define types for messages
-interface AuthMessage {
-  action: string;
-  target: string;
+if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'auth-iframe';
+    iframe.src = HOSTING_URL;
+    iframe.style.display = 'none'; // hide iframe
+    document.body.appendChild(iframe);
 }
 
-interface IframeMessageEvent extends MessageEvent {
-  data: string | {
-    user?: any;
-    [key: string]: any;
-  };
-}
+function handleIframeMessage(event: MessageEvent) {
+    try {
+        if (event.origin !== new URL(HOSTING_URL).origin) return; // ✅ Only accept from trusted origin
+        const { data } = event;
 
-// Listen for messages from the extension
-chrome.runtime.onMessage.addListener((
-  message: AuthMessage, 
-  sender: chrome.runtime.MessageSender, 
-  sendResponse: (response?: any) => void
-) => {
-  console.log('Received message in offscreen:', message);
-  
-  if (message.action === 'getAuth' && message.target === 'offscreen') {
-    console.log('Processing getAuth request');
-    
-    // Handler for messages from the iframe
-    function handleIframeMessage(event: IframeMessageEvent) {
-      console.log('Received iframe message:', event.data);
-      
-      try {
-        // Ignore Firebase internal messages
-        if (typeof event.data === 'string' && event.data.startsWith('!_{')) {
-          console.log('Ignoring Firebase internal message');
-          return;
-        }
-        
-        // Parse the authentication data if it's a string
-        const parsedData = typeof event.data === 'string' 
-          ? JSON.parse(event.data) 
-          : event.data;
-        
-        console.log('Parsed iframe data:', parsedData);
-        
-        // Clean up the event listener
+        if (!data || typeof data !== 'string' || !data.startsWith('{"user"')) return;
+
+        const parsedData = JSON.parse(data);
         window.removeEventListener('message', handleIframeMessage);
-        
-        // Send the user data back to the extension
-        console.log('Sending response:', parsedData.user);
-        sendResponse(parsedData.user);
-      } catch (e) {
-        const error = e as Error;
-        console.error('Error handling iframe message:', error, event.data);
-        sendResponse({ error: error.message });
-      }
+        pendingSendResponse?.(parsedData.user);
+        pendingSendResponse = null;
+    } catch (e) {
+        console.error('Error parsing iframe message:', e);
     }
+}
 
-    // Set up the event listener for messages from the iframe
-    window.addEventListener('message', handleIframeMessage);
-    
-    // Request authentication from the iframe
-    console.log('Sending initAuth message to iframe');
-    if (iframe.contentWindow) {
-      iframe.contentWindow.postMessage({initAuth: true}, HOSTING_URL);
-    } else {
-      console.error('iframe.contentWindow is not available');
-      sendResponse({ error: 'iframe.contentWindow is not available' });
+let pendingSendResponse: ((response?: any) => void) | null = null;
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'getAuth' && message.target === 'offscreen') {
+        pendingSendResponse = sendResponse;
+
+        window.addEventListener('message', handleIframeMessage);
+
+        if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ initAuth: true }, new URL(HOSTING_URL).origin);
+        } else {
+            console.error('iframe.contentWindow is null');
+        }
+
+        return true; // Asynchronous response
     }
-    
-    // Return true to indicate we'll send a response asynchronously
-    return true;
-  }
 });

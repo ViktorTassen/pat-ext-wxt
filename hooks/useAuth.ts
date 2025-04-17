@@ -6,7 +6,7 @@ export const useAuth = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      const response = await chrome.runtime.sendMessage({ action: 'signIn' });
+      const response = await browser.runtime.sendMessage({ action: 'signIn' });
 
         if (response.error) {
           console.error('Sign in error:', response.error);

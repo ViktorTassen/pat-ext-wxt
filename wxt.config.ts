@@ -10,7 +10,7 @@ export default defineConfig({
   manifest: {
     name: 'Rocket Relay Post Truck Manager',
     description: 'Rocket Post-a-Truck Manager for Amazon Relay Loadboard (Rocket PAT Manager)',
-    permissions: ['storage', 'declarativeNetRequest', 'tabs', 'offscreen'],
+    permissions: ['storage', 'declarativeNetRequest', 'tabs', 'offscreen', 'identity'],
     action: {
       default_title: "PAT Extension",
       default_popup: "popup/index.html"
@@ -32,6 +32,18 @@ export default defineConfig({
           "*://relay.amazon.co.jp/*"
         ],
       }
-    ]
+    ],
+    host_permissions: [
+      "https://rocket-post.firebaseapp.com/*",
+    ],
+
+
+    oauth2: {
+      client_id: "968131648916-q1ds7o49q4jeao9nmvm1k8g9pu17tbva.apps.googleusercontent.com",
+      scopes: [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+      ]
+    }
   },
 });

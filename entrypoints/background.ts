@@ -1,4 +1,4 @@
-
+/// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 import { authenticateWithFirebase } from "../firebase/firebaseClient"
 
@@ -49,7 +49,7 @@ export default defineBackground(() => {
 
 
 
-  const OFFSCREEN_DOCUMENT_PATH = 'offscreen/index.html';
+  const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
 
 
   let creatingOffscreenDocument: Promise<void> | null;
@@ -57,9 +57,10 @@ export default defineBackground(() => {
   async function hasOffscreenDocument() {
     const matchedClients = await self.clients.matchAll()
     return matchedClients.some(
-      (c) => c.url === chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH),
+      (c) => c.url === browser.runtime.getURL(OFFSCREEN_DOCUMENT_PATH),
     )
   }
+
 
   async function setupOffscreenDocument() {
     if (await hasOffscreenDocument()) return;
@@ -80,9 +81,9 @@ export default defineBackground(() => {
   async function getAuthFromOffscreen() {
     await setupOffscreenDocument();
     return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({ action: 'getAuth', target: 'offscreen' }, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+      browser.runtime.sendMessage({ action: 'getAuth', target: 'offscreen' }, (response) => {
+        if (browser.runtime.lastError) {
+          reject(browser.runtime.lastError);
         } else {
           resolve(response);
         }
@@ -91,7 +92,7 @@ export default defineBackground(() => {
   }
 
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "signIn") {
       getAuthFromOffscreen()
         .then(async (user: any) => {
@@ -100,19 +101,20 @@ export default defineBackground(() => {
             email: user.email,
             displayName: user.displayName
           }
-          //console.log("User signed in:", user)
+          console.log("User signed in:", user)
           // Authenticate Firebase with the access token
-          if (user.uid) {
-            await authenticateWithFirebase(user.uid)
-          }
+          // if (user.uid) {
+          //   await authenticateWithFirebase(user.uid)
+          // }
 
           await browser.storage.local.set({ user: minimalUser });
           
-          // Notify any open popups about the authentication change
-          chrome.runtime.sendMessage({ 
-            type: 'AUTH_STATE_CHANGED',
-            user: minimalUser
-          });
+          // // Notify any open popups about the authentication change
+          // chrome.runtime.sendMessage({ 
+          //   type: 'AUTH_STATE_CHANGED',
+          //   user: minimalUser
+          // });
+          
           
           sendResponse({ user: user })
         })
@@ -125,18 +127,50 @@ export default defineBackground(() => {
 
   })
 
+
+
+
+
+
+
+
+
 });
 
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (
     tab.url?.startsWith("https://accounts.google.com/o/oauth2/auth/") ||
     tab.url?.startsWith("https://<firebase-project-id>.firebaseapp.com")
   ) {
-    chrome.windows.update(tab.windowId, { focused: true })
+    browser.windows.update(tab.windowId, { focused: true })
     return
   }
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
