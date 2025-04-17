@@ -1,6 +1,7 @@
 {
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
+    "lib": ["dom", "es2021", "webworker"],
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx"
   }

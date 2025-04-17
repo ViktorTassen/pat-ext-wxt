@@ -8,7 +8,13 @@ export default defineConfig({
     disabled: true,
   }),
   manifest: {
+    name: 'Rocket Relay Post Truck Manager',
+    description: 'Rocket Post-a-Truck Manager for Amazon Relay Loadboard (Rocket PAT Manager)',
     permissions: ['storage', 'declarativeNetRequest', 'tabs', 'offscreen'],
+    action: {
+      default_title: "PAT Extension",
+      default_popup: "popup/index.html"
+    },
     web_accessible_resources: [
       {
         resources: ["fetch-main-world.js", "actions-main-world.js"],

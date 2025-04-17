@@ -1,5 +1,13 @@
 export type Region = 'US' | 'UK' | 'DE' | 'ES' | 'FR' | 'IT' | 'PL' | 'IN' | 'CZ' | 'JP' | 'CA';
 
+export interface User {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+}
+
+
 export interface Driver {
   firstName: string;
   lastName: string;

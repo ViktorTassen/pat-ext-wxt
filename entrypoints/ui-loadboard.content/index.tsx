@@ -40,7 +40,8 @@ export default defineContentScript({
         onMount: (container) => {
           const LoadCardContainer = document.createElement('span');
           LoadCardContainer.style.marginLeft = '8px'; // Add some spacing
-          
+          // LoadCardContainer.style.float = 'right'; // Push to the right
+          // LoadCardContainer.style.paddingRight = '32px'; // Add some spacing
           const root = createRoot(LoadCardContainer);
           root.render(
             <ThemeProvider theme={theme}>

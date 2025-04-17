@@ -22,8 +22,9 @@ export default defineContentScript({
     "*://relay.amazon.cz/loadboard/orders?state*",
     "*://relay.amazon.co.jp/loadboard/orders?state*"
   ],
-  
+
   async main(ctx) {
+    console.log('ui pat content script loaded');
     // Track all created UI components for cleanup
     const createdCheckboxUis = new Set<any>();
     // Create the management UI
@@ -79,7 +80,7 @@ export default defineContentScript({
     // Process existing order ID elements
     function processOrderIdElements() {
       const orderIdElements = document.querySelectorAll(".order-id:not([data-checkbox-initialized])");
-      for (const element of orderIdElements) {
+      for (const element of Array.from(orderIdElements)) {
         element.setAttribute("data-checkbox-initialized", "true");
         const checkboxUi = createCheckboxUi(element as HTMLElement, element.textContent?.trim() || '');
         checkboxUi.mount();

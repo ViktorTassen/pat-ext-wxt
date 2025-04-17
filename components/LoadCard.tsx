@@ -98,44 +98,44 @@ export function LoadCard({ workOpportunityId, workOpportunity }: LoadCardProps) 
     setAnchorEl(null);
   };
 
+  // Event handlers for post truck functionality
+  const handleSuccess = (e: CustomEvent) => {
+    console.log('Order created successfully', e.detail);
+    setIsLoading(false);
+    handleClose();
+  };
+  
+  const handleError = (e: CustomEvent) => {
+    console.error('Error creating order:', e.detail.error);
+    setIsLoading(false);
+  };
+  
+  // Set up and clean up event listeners
+  useEffect(() => {
+    // Only add listeners when isLoading is true (we've started the process)
+    if (!isLoading) return;
+    
+    // Add event listeners
+    window.addEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+    window.addEventListener('pat-postTruckError', handleError as EventListener);
+    
+    // Set a timeout to prevent UI from being stuck
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+      }
+    }, 5000); // 5 seconds timeout
+    
+    // Cleanup function that runs when the component unmounts or dependencies change
+    return () => {
+      window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
+      window.removeEventListener('pat-postTruckError', handleError as EventListener);
+      clearTimeout(timeoutId);
+    };
+  }, [isLoading]); // Re-run this effect when isLoading changes
+
   const handlePostTruck = () => {
     setIsLoading(true);
-    
-    // Prepare event handlers outside of the main function
-    const handleSuccess = (e: CustomEvent) => {
-      console.log('Order created successfully', e.detail);
-      setIsLoading(false);
-      handleClose();
-    };
-    
-    const handleError = (e: CustomEvent) => {
-      console.error('Error creating order:', e.detail.error);
-      setIsLoading(false);
-    };
-    
-    // Set up listeners and cleanup with useEffect
-    React.useEffect(() => {
-      // Only add listeners when isLoading is true (we've started the process)
-      if (!isLoading) return;
-      
-      // Add event listeners
-      window.addEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-      window.addEventListener('pat-postTruckError', handleError as EventListener);
-      
-      // Set a timeout to prevent UI from being stuck
-      const timeoutId = setTimeout(() => {
-        if (isLoading) {
-          setIsLoading(false);
-        }
-      }, 5000); // 5 seconds timeout
-      
-      // Cleanup function that runs when the component unmounts or dependencies change
-      return () => {
-        window.removeEventListener('pat-postTruckSuccess', handleSuccess as EventListener);
-        window.removeEventListener('pat-postTruckError', handleError as EventListener);
-        clearTimeout(timeoutId);
-      };
-    }, [isLoading]); // Re-run this effect when isLoading changes
     
     // Dispatch custom event for action handler
     const detail = {
